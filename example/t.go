@@ -10,8 +10,12 @@ type xController struct {
 }
 
 func (x xController) Handle(ctx *denny.Context)  {
-	x.Infof("receive request %s", ctx.Request.URL)
+	x.AddLine("receive request")
+	var str = "hello"
+	x.AddLine("do more thing")
+	str += " world"
 	ctx.Writer.Write([]byte("Hello word"))
+	x.Infof("finished")
 }
 
 func requestInfo() denny.HandleFunc {
