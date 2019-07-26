@@ -21,7 +21,7 @@ func (x xController) Handle(ctx *denny.Context)  {
 	var str = "hello"
 	x.AddLine("do more thing")
 	str += " world"
-	ctx.Writer.Write([]byte("Hello word"))
+	ctx.Writer.Write([]byte(str))
 	x.Infof("finished")
 }
 

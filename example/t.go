@@ -14,17 +14,17 @@ func (x xController) Handle(ctx *denny.Context)  {
 	var str = "hello"
 	x.AddLine("do more thing")
 	str += " world"
-	ctx.Writer.Write([]byte("Hello word"))
+	ctx.Writer.Write([]byte(str))
 	x.Infof("finished")
 }
 
 func requestInfo() denny.HandleFunc {
-	log := log.New("request info")
+	logger := log.New("requestInfo")
 	return func(context *denny.Context) {
 		clientIP := context.ClientIP()
 		method := context.Request.Method
 		statusCode := context.Writer.Status()
-		log.Infof("clientIp ", clientIP, "method ", method, "status ", statusCode)
+		logger.Infof("clientIp ", clientIP, "method ", method, "status ", statusCode)
 	}
 }
 
