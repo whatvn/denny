@@ -1,24 +1,32 @@
 package main
 
 import (
-	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/whatvn/denny"
+	"github.com/whatvn/denny/log"
 )
 
-type HandlerF gin.HandlerFunc
-
-func tHandler(ctx *denny.Context)  {
-	fmt.Println("ginHandler")
+type xController struct {
+	denny.Controller
 }
 
-func convertHandlerFunc(h HandlerF) gin.HandlerFunc {
-	var temp interface{} = h
-	return temp.(gin.HandlerFunc)
+func (x xController) Handle(ctx *denny.Context)  {
+	x.Infof("receive request %s", ctx.Request.URL)
+	ctx.Writer.Write([]byte("Hello word"))
+}
+
+func requestInfo() denny.HandleFunc {
+	log := log.New("request info")
+	return func(context *denny.Context) {
+		clientIP := context.ClientIP()
+		method := context.Request.Method
+		statusCode := context.Writer.Status()
+		log.Infof("clientIp ", clientIP, "method ", method, "status ", statusCode)
+	}
 }
 
 func main()  {
-	h := convertHandlerFunc(tHandler)
-	ctx := gin.Context{}
-	h(&ctx)
+	server := denny.NewServer()
+	server.WithMiddleware(requestInfo())
+	server.Controller("/", denny.HttpGet, &xController{})
+	server.Start()
 }

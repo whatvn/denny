@@ -6,45 +6,43 @@ import (
 	"sync"
 )
 
+type Context = gin.Context
 
-type Handler struct {
-	gin.Context
+type HandleFunc = gin.HandlerFunc
 
-}
-
-type methodMap struct {
+type methodHandlerMap struct {
 	method  HttpMethod
-	handler gin.HandlerFunc
+	handler HandleFunc
 	*log.Log
 }
 
-type route struct {
+type denny struct {
 	sync.Mutex
-	handlerMap map[string]*methodMap
+	handlerMap map[string]*methodHandlerMap
 	*gin.Engine
 }
 
-func NewRouter() *route {
-	return &route{
-		handlerMap: make(map[string]*methodMap),
+func NewServer() *denny {
+	return &denny{
+		handlerMap: make(map[string]*methodHandlerMap),
 		Engine:     gin.New(),
 	}
 }
 
-func (r *route) Add(path string, method HttpMethod, handler gin.HandlerFunc) {
+func (r *denny) Controller(path string, method HttpMethod, ctl controller) {
 	r.Lock()
 	defer r.Unlock()
-	m := &methodMap{
+	ctl.init()
+	m := &methodHandlerMap{
 		method:  method,
-		handler: handler,
+		handler: ctl.Handle,
 		Log:     log.New(path),
 	}
 	m.Infof("setting up handler for path %s, method %V", path, method)
 	r.handlerMap[path] = m
 }
 
-
-func (r *route) initRoute() {
+func (r *denny) initRoute() {
 	for p, m := range r.handlerMap {
 		switch m.method {
 		case HttpGet:
@@ -61,11 +59,11 @@ func (r *route) initRoute() {
 	}
 }
 
-func (r *route) WithMiddleware(middleware ...gin.HandlerFunc) {
+func (r *denny) WithMiddleware(middleware ...HandleFunc) {
 	r.Use(middleware...)
 }
 
-func (r *route) Start(addrs ...string) error {
+func (r *denny) Start(addrs ...string) error {
 	r.initRoute()
 	return r.Run(addrs...)
 }
