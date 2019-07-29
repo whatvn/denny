@@ -5,7 +5,7 @@ http server which simplify request handling and logging
 - simple cache usage
 - open tracing attached 
 - simpler config reader
-
+- logger is attached in controller, log should be showed as steps and in only one line for every request 
 
 ## usage example
 

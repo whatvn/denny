@@ -2,13 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9c175ad7-21ff-4e31-9bdb-c23e5d706977" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/middleware/logger.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/middleware/opentracing.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cache/memory.go" beforeDir="false" afterPath="$PROJECT_DIR$/cache/memory.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/example/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/middleware.go" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -96,8 +91,8 @@
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="FIRST">
-              <first_editor relative-caret-position="485">
-                <caret line="35" selection-start-line="35" selection-end-line="35" />
+              <first_editor relative-caret-position="111">
+                <caret line="7" column="105" selection-start-line="7" selection-start-column="105" selection-end-line="7" selection-end-column="105" />
                 <folding>
                   <element signature="e#13#88#0" expanded="true" />
                 </folding>
@@ -345,7 +340,7 @@
     <frame x="0" y="23" width="1680" height="990" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25274727" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25274727" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -358,7 +353,7 @@
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="8" />
       <window_info anchor="bottom" id="Version Control" order="9" />
-      <window_info anchor="bottom" id="Terminal" order="10" visible="true" weight="0.32962137" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="10" visible="true" weight="0.32962137" />
       <window_info anchor="bottom" id="Event Log" order="11" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -708,8 +703,8 @@
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="FIRST">
-          <first_editor relative-caret-position="485">
-            <caret line="35" selection-start-line="35" selection-end-line="35" />
+          <first_editor relative-caret-position="111">
+            <caret line="7" column="105" selection-start-line="7" selection-start-column="105" selection-end-line="7" selection-end-column="105" />
             <folding>
               <element signature="e#13#88#0" expanded="true" />
             </folding>
