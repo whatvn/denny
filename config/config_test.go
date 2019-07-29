@@ -10,7 +10,7 @@ import (
 )
 
 func createFileForTest(t *testing.T) *os.File {
-	data := []byte(`{"foo": "bar"}`)
+	data := []byte(`{"foo": "bar", "denny": {"sister": "jenny"}}`)
 	path := filepath.Join(os.TempDir(), fmt.Sprintf("file.%d", time.Now().UnixNano()))
 	fh, err := os.Create(path)
 	if err != nil {
@@ -65,5 +65,35 @@ func TestLoadWithInvalidFile(t *testing.T) {
 	}
 	if !strings.Contains(fmt.Sprintf("%v", err), "/i/do/not/exists.json") {
 		t.Fatalf("Expected error to contain the unexisting file but got %v", err)
+	}
+}
+
+
+func TestWithScanToPointer(t *testing.T) {
+	type Denny struct {
+		Sister string
+	}
+	var (
+		v string
+		denny = &Denny{}
+	)
+	TestLoadWithGoodFile(t)
+	ov := "bar"
+
+	err := Scan(&v, "foo")
+
+	if err != nil {
+		t.Fatalf("Expect value but got error reading %v", err)
+	}
+	if v != ov {
+		t.Fatalf("Expected bar error but got %v", v)
+	}
+	err = Scan(denny, "denny")
+
+	if err != nil {
+		t.Fatalf("Expect value but got error reading %v", err)
+	}
+	if denny.Sister != "jenny" {
+		t.Fatalf("Expected jenny error but got %v", v)
 	}
 }
