@@ -7,6 +7,11 @@ http server which simplify request handling and logging
 - simpler config reader
 - logger is attached in controller, log should be showed as steps and in only one line for every request 
 
+
+`denny` is not a http server from scratch, by now it's based on [gin framework](https://github.com/gin-gonic/gin) (currently) but aim to allow user to switch framework by configuration. 
+It also borrow many component from well known libraries (go-config, beego, logrus...).  
+
+
 ## usage example
 
 ### setting up request handler 

@@ -14,12 +14,13 @@ func Logger() denny.HandleFunc {
 			method     = ctx.Request.Method
 			statusCode = ctx.Writer.Status()
 			userAgent  = ctx.Request.UserAgent()
+			uri        = ctx.Request.RequestURI
 		)
-
 		logger.WithField("ClientIP", clientIP)
 		logger.WithField("RequestMethod", method)
 		logger.WithField("Status", statusCode)
 		logger.WithField("UserAgent", userAgent)
+		logger.WithField("Uri", uri)
 		logger.Infof(time.Now().Format(time.RFC3339))
 	}
 }
