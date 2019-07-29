@@ -3,44 +3,83 @@ http server which simplify request handling and logging
 
 
 ## usage example
+
+### setting up request handler 
 ```go
 
 package main
 
 import (
 	"github.com/whatvn/denny"
-	"github.com/whatvn/denny/log"
 )
 
 type xController struct {
 	denny.Controller
 }
 
-func (x xController) Handle(ctx *denny.Context)  {
-	x.AddLine("receive request")
+func (x xController) Handle(ctx *denny.Context) {
+	x.AddLog("receive request")
 	var str = "hello"
-	x.AddLine("do more thing")
+	x.AddLog("do more thing")
 	str += " world"
 	ctx.Writer.Write([]byte(str))
 	x.Infof("finished")
 }
 
-func requestInfo() denny.HandleFunc {
-	log := log.New("request info")
-	return func(context *denny.Context) {
-		clientIP := context.ClientIP()
-		method := context.Request.Method
-		statusCode := context.Writer.Status()
-		log.Infof("clientIp ", clientIP, "method ", method, "status ", statusCode)
-	}
-}
-
-func main()  {
+func main() {
 	server := denny.NewServer()
-	server.WithMiddleware(requestInfo())
+	server.WithMiddleware(denny.Logger())
 	server.Controller("/", denny.HttpGet, &xController{})
 	server.Start()
 }
 
 
+```
+
+### Reading config 
+
+```go
+
+package main
+
+import (
+	"fmt"
+	"github.com/whatvn/denny/config"
+	"os"
+	"path/filepath"
+	"time"
+)
+
+func configFile() (*os.File, error) {
+	data := []byte(`{"foo": "bar", "denny": {"sister": "jenny"}}`)
+	path := filepath.Join(os.TempDir(), fmt.Sprintf("file.%d", time.Now().UnixNano()))
+	fh, err := os.Create(path)
+	if err != nil {
+		return nil, err
+	}
+	_, err = fh.Write(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return fh, nil
+}
+
+func main()  {
+	f, err := configFile()
+	if err != nil {
+		fmt.Println(err)
+	}
+	// read config from file
+	config.New(f.Name())
+	fmt.Println(config.GetString("foo"))
+	fmt.Println(config.GetString("denny", "sister"))
+
+	// config from evn takes higher priority
+	os.Setenv("foo", "barbar")
+	os.Setenv("denny_sister", "Jenny")
+	config.New(f.Name())
+	fmt.Println(config.GetString("foo"))
+	fmt.Println(config.GetString("denny", "sister"))
+}
 ```
