@@ -71,8 +71,8 @@ func (c *memory) Delete(key string) {
 
 // Incr incr key in map if it exists
 func (c *memory) Incr(key string) error {
-	c.Lock()
-	defer c.Unlock()
+	c.RLock()
+	defer c.RUnlock()
 	el, ok := c.storage.Load(key)
 	if !ok {
 		return ValueNotExistError

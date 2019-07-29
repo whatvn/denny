@@ -1,13 +1,14 @@
-package denny
+package middleware
 
 import (
+	"github.com/whatvn/denny"
 	"github.com/whatvn/denny/log"
 	"time"
 )
 
-func Logger() HandleFunc {
+func Logger() denny.HandleFunc {
 	logger := log.New()
-	return func(ctx *Context) {
+	return func(ctx *denny.Context) {
 		var (
 			clientIP   = ctx.ClientIP()
 			method     = ctx.Request.Method
@@ -20,6 +21,5 @@ func Logger() HandleFunc {
 		logger.WithField("Status", statusCode)
 		logger.WithField("UserAgent", userAgent)
 		logger.Infof(time.Now().Format(time.RFC3339))
-		ctx.Error()
 	}
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/whatvn/denny"
+	"github.com/whatvn/denny/middleware"
 )
 
 type xController struct {
@@ -19,7 +20,7 @@ func (x xController) Handle(ctx *denny.Context) {
 
 func main() {
 	server := denny.NewServer()
-	server.WithMiddleware(denny.Logger())
+	server.WithMiddleware(middleware.Logger())
 	server.Controller("/", denny.HttpGet, &xController{})
 	server.Start()
 }
