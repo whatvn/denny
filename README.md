@@ -1,6 +1,11 @@
 # denny
 http server which simplify request handling and logging
 
+- use class base request controller, one controller for one handler 
+- simple cache usage
+- open tracing attached 
+- simpler config reader
+
 
 ## usage example
 
