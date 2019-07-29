@@ -11,7 +11,6 @@ var (
 	cfg Config
 )
 
-
 type Config goconfig.Config
 
 // New will load config from various config file file in Json format
@@ -22,7 +21,7 @@ func New(sources ...string) error {
 	if len(sources) == 0 {
 		return cfg.Load(env.NewSource())
 	}
-	cfgSources := []source.Source{}
+	var cfgSources []source.Source
 	for _, s := range sources {
 		cfgSources = append(cfgSources, file.NewSource(file.WithPath(s)))
 	}
