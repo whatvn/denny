@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -30,9 +31,10 @@ func (i *item) isExpire() bool {
 
 // Get return value if key exist or nil if it does not
 func (c *memory) Get(key string) interface{} {
-	v, ok := c.storage.Load(key)
+	el, ok := c.storage.Load(key)
 	if ok {
-		return v
+		v := el.(*item)
+		return v.value
 	}
 	return nil
 }
@@ -127,8 +129,10 @@ func (c *memory) ClearAll() {
 }
 
 func (c *memory) runGc(config Config) {
+	fmt.Println("run gc")
 	for {
 		<-time.After(time.Duration(config.GcDuration) * time.Second)
+		fmt.Println("run gc")
 		for _, k := range c.expires() {
 			c.Delete(k)
 		}
@@ -150,7 +154,9 @@ func (c *memory) expires() []string {
 }
 
 func New(cfg Config) Cache {
-	c := &memory{}
+	c := &memory{
+		storage: &sync.Map{},
+	}
 	go c.runGc(cfg)
 	return c
 }
