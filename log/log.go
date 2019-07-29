@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"sync"
+	"time"
 )
 
 type Log struct {
@@ -12,9 +13,10 @@ type Log struct {
 	step int32
 }
 
-func New(funcName string) *Log {
+func New() *Log {
+	logTime := time.Now().Format(time.RFC3339)
 	return &Log{
-		Entry: logrus.WithField("funcName", funcName),
+		Entry: logrus.WithField("Time", logTime),
 	}
 }
 
@@ -24,8 +26,8 @@ func (l *Log) addStep() {
 	l.step += 1
 }
 
-func (l *Log) AddLine(line string) {
+func (l *Log) AddLog(line string) {
 	l.addStep()
-	step := fmt.Sprintf("step_%d", l.step)
+	step := fmt.Sprintf("STEP_%d", l.step)
 	l.Entry = l.Entry.WithField(step, line)
 }

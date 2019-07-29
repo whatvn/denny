@@ -1,6 +1,8 @@
 package denny
 
-import "github.com/whatvn/denny/log"
+import (
+	"github.com/whatvn/denny/log"
+)
 
 type controller interface {
 	Handle(*Context)
@@ -12,7 +14,5 @@ type Controller struct {
 }
 
 func (c *Controller) init() {
-	c.Log = log.New("xyz")
+	c.Log = log.New()
 }
-
-

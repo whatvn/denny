@@ -2,7 +2,6 @@ package denny
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/whatvn/denny/log"
 	"sync"
 )
 
@@ -13,7 +12,6 @@ type HandleFunc = gin.HandlerFunc
 type methodHandlerMap struct {
 	method  HttpMethod
 	handler HandleFunc
-	*log.Log
 }
 
 type denny struct {
@@ -36,9 +34,7 @@ func (r *denny) Controller(path string, method HttpMethod, ctl controller) {
 	m := &methodHandlerMap{
 		method:  method,
 		handler: ctl.Handle,
-		Log:     log.New(path),
 	}
-	m.Infof("setting up handler for path %s, method %V", path, method)
 	r.handlerMap[path] = m
 }
 

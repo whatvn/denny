@@ -10,21 +10,21 @@ type xController struct {
 }
 
 func (x xController) Handle(ctx *denny.Context)  {
-	x.AddLine("receive request")
+	x.AddLog("receive request")
 	var str = "hello"
-	x.AddLine("do more thing")
+	x.AddLog("do more thing")
 	str += " world"
 	ctx.Writer.Write([]byte(str))
 	x.Infof("finished")
 }
 
 func requestInfo() denny.HandleFunc {
-	logger := log.New("requestInfo")
+	logger := log.New()
 	return func(context *denny.Context) {
 		clientIP := context.ClientIP()
 		method := context.Request.Method
 		statusCode := context.Writer.Status()
-		logger.Infof("clientIp ", clientIP, "method ", method, "status ", statusCode)
+		logger.Infof("clientIp: %s method %s status %d, user agent: %s",clientIP,  method, statusCode, context.Request.UserAgent())
 	}
 }
 
