@@ -31,3 +31,7 @@ func (l *Log) AddLog(line string) {
 	step := fmt.Sprintf("STEP_%d", l.step)
 	l.Entry = l.Entry.WithField(step, line)
 }
+
+func (l *Log) WithField(field string, value interface{}) {
+	l.Entry = l.Entry.WithField(field, value)
+}
