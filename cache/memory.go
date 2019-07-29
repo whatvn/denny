@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -129,10 +128,8 @@ func (c *memory) ClearAll() {
 }
 
 func (c *memory) runGc(config Config) {
-	fmt.Println("run gc")
 	for {
 		<-time.After(time.Duration(config.GcDuration) * time.Second)
-		fmt.Println("run gc")
 		for _, k := range c.expires() {
 			c.Delete(k)
 		}
