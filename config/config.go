@@ -11,8 +11,12 @@ var (
 	cfg Config
 )
 
+
 type Config goconfig.Config
 
+// New will load config from various config file file in Json format
+// if same config param available in environment, environment param will
+// take higher priority
 func New(sources ...string) error {
 	cfg = goconfig.NewConfig()
 	if len(sources) == 0 {
@@ -38,4 +42,8 @@ func GetInt(path ...string) int {
 
 func Scan(t interface{}, path ...string) error {
 	return cfg.Get(path...).Scan(t)
+}
+
+func Map() map[string]interface{} {
+	return cfg.Map()
 }
