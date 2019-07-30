@@ -35,3 +35,7 @@ func (l *Log) AddLog(line string) {
 func (l *Log) WithField(field string, value interface{}) {
 	l.Entry = l.Entry.WithField(field, value)
 }
+
+func (l *Log) WithFields(fields map[string]interface{}) {
+	l.Entry = l.Entry.WithFields(fields)
+}
