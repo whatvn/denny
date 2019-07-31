@@ -1,6 +1,7 @@
 package denny
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -37,6 +38,7 @@ func TestSimpleRequest(t *testing.T) {
 	})
 	server.GET("/", func(c *Context) {
 		signature += "D"
+		c.String(http.StatusOK, signature)
 	})
 	server.NoRoute(func(c *Context) {
 		signature += " X "
@@ -47,6 +49,10 @@ func TestSimpleRequest(t *testing.T) {
 	// RUN
 	w := performRequest(server, "GET", "/")
 
+	out, e := ioutil.ReadAll(w.Result().Body)
+
+	assert.Equal(t, nil, e)
+	assert.Equal(t, "ACD", string(out))
 	// TEST
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "ACDB", signature)
