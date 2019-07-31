@@ -1,11 +1,11 @@
 # denny
-http server which simplify request handling and logging
+common http server which simplify request handling and logging by combining libraries, framework to be able to 
 
 - use class base request controller, one controller for one handler 
-- simple cache usage
-- open tracing attached 
-- simpler config reader
-- logger is attached in controller, log should be showed as steps and in only one line for every request 
+- make cache usage simpler
+- use open tracing  
+- make config reader simpler
+- make logger attached in controller, log should be showed as steps and in only one line for every request 
 
 
 `denny` is not a http server from scratch, by now it's based on [gin framework](https://github.com/gin-gonic/gin) (currently) but aim to allow user to switch framework by configuration. 
