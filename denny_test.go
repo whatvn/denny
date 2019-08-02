@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 type header struct {
 	Key   string
 	Value string
 }
+
 func performRequest(r http.Handler, method, path string, headers ...header) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(method, path, nil)
 	for _, h := range headers {
@@ -23,7 +23,6 @@ func performRequest(r http.Handler, method, path string, headers ...header) *htt
 	r.ServeHTTP(w, req)
 	return w
 }
-
 
 func TestSimpleRequest(t *testing.T) {
 	signature := ""
@@ -51,9 +50,9 @@ func TestSimpleRequest(t *testing.T) {
 
 	out, e := ioutil.ReadAll(w.Result().Body)
 
+	// TEST
 	assert.Equal(t, nil, e)
 	assert.Equal(t, "ACD", string(out))
-	// TEST
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "ACDB", signature)
 }

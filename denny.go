@@ -2,6 +2,7 @@ package denny
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"sync"
 )
 
@@ -53,6 +54,12 @@ func (r *denny) initRoute() {
 			r.PATCH(p, m.handler)
 		}
 	}
+}
+
+// ServeHTTP conforms to the http.Handler interface.
+func (r *denny) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	r.initRoute()
+	r.Engine.ServeHTTP(w, req)
 }
 
 func (r *denny) WithMiddleware(middleware ...HandleFunc) {

@@ -26,9 +26,14 @@ func (l *Log) addStep() {
 	l.step += 1
 }
 
-func (l *Log) AddLog(line string) {
+func (l *Log) AddLog(line string, format ...interface{}) {
 	l.addStep()
 	step := fmt.Sprintf("STEP_%d", l.step)
+	if len(format) > 0 {
+		logLine := fmt.Sprintf(line, format)
+		l.Entry = l.Entry.WithField(step, logLine)
+		return
+	}
 	l.Entry = l.Entry.WithField(step, line)
 }
 
