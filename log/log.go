@@ -1,6 +1,7 @@
 package log
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"sync"
@@ -18,6 +19,13 @@ func New() *Log {
 	return &Log{
 		Entry: logrus.WithField("Time", logTime),
 	}
+}
+
+func (l *Log) ToJsonString(input interface{}) string {
+	if bytes, err := json.Marshal(input); err == nil {
+		return string(bytes)
+	}
+	return ""
 }
 
 func (l *Log) addStep() {
