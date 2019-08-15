@@ -14,8 +14,8 @@ func (x xController) Handle(ctx *denny.Context) {
 	var str = "hello"
 	x.AddLog("do more thing")
 	str += " world"
-	ctx.Writer.Write([]byte(str))
 	x.Infof("finished")
+	ctx.Writer.Write([]byte(str))
 }
 
 type yController struct {
@@ -27,8 +27,8 @@ func (y yController) Handle(ctx *denny.Context) {
 	var str = "hello"
 	y.AddLog("do more thing")
 	str += " denny"
-	ctx.Writer.Write([]byte(str))
 	y.Infof("finished")
+	ctx.Writer.Write([]byte(str))
 }
 
 func main() {

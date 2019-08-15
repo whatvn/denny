@@ -44,8 +44,16 @@ func (l *Log) addStep() {
 	l.step += 1
 }
 
+func (l *Log) init() {
+	if l.Entry == nil {
+		logTime := time.Now().Format(time.RFC3339)
+		l.Entry = logrus.WithField("Time", logTime)
+	}
+}
+
 // AddLog add a new field to log with step = current step + 1
 func (l *Log) AddLog(line string, format ...interface{}) {
+	l.init()
 	l.addStep()
 	step := fmt.Sprintf("STEP_%d", l.step)
 	if len(format) > 0 {

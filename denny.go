@@ -31,7 +31,6 @@ func NewServer() *denny {
 func (r *denny) Controller(path string, method HttpMethod, ctl controller) {
 	r.Lock()
 	defer r.Unlock()
-	ctl.init()
 	m := &methodHandlerMap{
 		method:  method,
 		handler: ctl.Handle,
