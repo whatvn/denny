@@ -28,7 +28,12 @@ func New(sources ...string) error {
 	if err := cfg.Load(cfgSources...); err != nil {
 		return err
 	}
+
 	return cfg.Load(env.NewSource())
+}
+
+func Reload() error {
+	return cfg.Sync()
 }
 
 func GetString(path ...string) string {
