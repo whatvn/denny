@@ -32,8 +32,11 @@ func (r *denny) Controller(path string, method HttpMethod, ctl controller) {
 	r.Lock()
 	defer r.Unlock()
 	m := &methodHandlerMap{
-		method:  method,
-		handler: ctl.Handle,
+		method: method,
+		handler: func(ctx *Context) {
+			ctl.init()
+			ctl.Handle(ctx)
+		},
 	}
 	r.handlerMap[path] = m
 }

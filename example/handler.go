@@ -10,6 +10,8 @@ type xController struct {
 }
 
 func (x xController) Handle(ctx *denny.Context) {
+	x.Infof("log something to test log init")
+	x.WithField("x", "y")
 	x.AddLog("receive request")
 	var str = "hello"
 	x.AddLog("do more thing")

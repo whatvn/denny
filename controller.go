@@ -6,8 +6,13 @@ import (
 
 type controller interface {
 	Handle(*Context)
+	init()
 }
 
 type Controller struct {
-	log.Log
+	*log.Log
+}
+
+func (c *Controller) init() {
+	c.Log = log.New()
 }
