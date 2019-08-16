@@ -88,7 +88,7 @@ func (c *memory) Incr(key string) error {
 		return InvalidValueTypeError
 	}
 
-	c.Set(key, i, v.life())
+	c.Set(key, i+1, v.life())
 	return nil
 }
 
@@ -111,7 +111,7 @@ func (c *memory) Decr(key string) error {
 		return InvalidValueTypeError
 	}
 
-	c.Set(key, i, v.life())
+	c.Set(key, i-1, v.life())
 	return nil
 }
 
