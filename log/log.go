@@ -52,24 +52,29 @@ func (l *Log) init() {
 }
 
 // AddLog add a new field to log with step = current step + 1
-func (l *Log) AddLog(line string, format ...interface{}) {
+func (l *Log) AddLog(line string, format ...interface{}) *Log {
 	l.init()
 	l.addStep()
 	step := fmt.Sprintf("STEP_%d", l.step)
 	if len(format) > 0 {
 		logLine := fmt.Sprintf(line, format)
 		l.Entry = l.Entry.WithField(step, logLine)
-		return
+		return l
 	}
 	l.Entry = l.Entry.WithField(step, line)
+	return l
 }
 
 // WithField a a new key = value to log with key = field, value = value
-func (l *Log) WithField(field string, value interface{}) {
+func (l *Log) WithField(field string, value interface{}) *Log {
+	l.init()
 	l.Entry = l.Entry.WithField(field, value)
+	return l
 }
 
 // WithFields add multiple key/value to log: key1 = value1, key2 = value2
-func (l *Log) WithFields(fields map[string]interface{}) {
+func (l *Log) WithFields(fields map[string]interface{}) *Log {
+	l.init()
 	l.Entry = l.Entry.WithFields(fields)
+	return l
 }
