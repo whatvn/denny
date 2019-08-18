@@ -38,5 +38,5 @@ func main() {
 	server.WithMiddleware(middleware.Logger())
 	server.Controller("/", denny.HttpGet, &xController{})
 	server.Controller("/denny", denny.HttpGet, &yController{})
-	server.Start()
+	server.GraceFulStart()
 }
