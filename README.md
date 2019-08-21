@@ -90,7 +90,7 @@ func main()  {
 	// config from evn takes higher priority
 	os.Setenv("foo", "barbar")
 	os.Setenv("denny_sister", "Jenny")
-	config.New(f.Name())
+	config.Reload()
 	fmt.Println(config.GetString("foo"))
 	fmt.Println(config.GetString("denny", "sister"))
 }

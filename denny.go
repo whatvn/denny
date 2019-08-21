@@ -26,13 +26,15 @@ type denny struct {
 	*log.Log
 	handlerMap map[string]*methodHandlerMap
 	*gin.Engine
+	initialised bool
 }
 
 func NewServer() *denny {
 	return &denny{
-		handlerMap: make(map[string]*methodHandlerMap),
-		Engine:     gin.New(),
-		Log:        log.New(),
+		handlerMap:  make(map[string]*methodHandlerMap),
+		Engine:      gin.New(),
+		Log:         log.New(),
+		initialised: false,
 	}
 }
 
@@ -50,6 +52,9 @@ func (r *denny) Controller(path string, method HttpMethod, ctl controller) {
 }
 
 func (r *denny) initRoute() {
+	if r.initialised {
+		return
+	}
 	for p, m := range r.handlerMap {
 		switch m.method {
 		case HttpGet:
@@ -64,13 +69,12 @@ func (r *denny) initRoute() {
 			r.PATCH(p, m.handler)
 		}
 	}
+	r.initialised = true
 }
 
 // ServeHTTP conforms to the http.Handler interface.
 func (r *denny) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	if r.handlerMap == nil {
-		r.initRoute()
-	}
+	r.initRoute()
 	r.Engine.ServeHTTP(w, req)
 }
 
