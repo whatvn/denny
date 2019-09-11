@@ -38,16 +38,16 @@ func (l *Log) ToJsonString(input interface{}) string {
 	return ""
 }
 
-func (l *Log) addStep() {
+func (l *Log) addStep() int32 {
 	l.Lock()
 	defer l.Unlock()
 	l.step += 1
+	return l.step
 }
 
 // AddLog add a new field to log with step = current step + 1
 func (l *Log) AddLog(line string, format ...interface{}) *Log {
-	l.addStep()
-	step := fmt.Sprintf("STEP_%d", l.step)
+	step := fmt.Sprintf("STEP_%d", l.addStep())
 	if len(format) > 0 {
 		logLine := fmt.Sprintf(line, format)
 		l.Entry = l.Entry.WithField(step, logLine)
