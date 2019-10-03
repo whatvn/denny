@@ -21,7 +21,7 @@ type methodHandlerMap struct {
 	handler HandleFunc
 }
 
-type denny struct {
+type Denny struct {
 	sync.Mutex
 	*log.Log
 	handlerMap map[string]*methodHandlerMap
@@ -29,8 +29,8 @@ type denny struct {
 	initialised bool
 }
 
-func NewServer() *denny {
-	return &denny{
+func NewServer() *Denny {
+	return &Denny{
 		handlerMap:  make(map[string]*methodHandlerMap),
 		Engine:      gin.New(),
 		Log:         log.New(),
@@ -38,7 +38,7 @@ func NewServer() *denny {
 	}
 }
 
-func (r *denny) Controller(path string, method HttpMethod, ctl controller) {
+func (r *Denny) Controller(path string, method HttpMethod, ctl controller) {
 	r.Lock()
 	defer r.Unlock()
 	m := &methodHandlerMap{
@@ -51,7 +51,7 @@ func (r *denny) Controller(path string, method HttpMethod, ctl controller) {
 	r.handlerMap[path] = m
 }
 
-func (r *denny) initRoute() {
+func (r *Denny) initRoute() {
 	if r.initialised {
 		return
 	}
@@ -73,23 +73,23 @@ func (r *denny) initRoute() {
 }
 
 // ServeHTTP conforms to the http.Handler interface.
-func (r *denny) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (r *Denny) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.initRoute()
 	r.Engine.ServeHTTP(w, req)
 }
 
-func (r *denny) WithMiddleware(middleware ...HandleFunc) {
+func (r *Denny) WithMiddleware(middleware ...HandleFunc) {
 	r.Use(middleware...)
 }
 
-func (r *denny) Start(addrs ...string) error {
+func (r *Denny) Start(addrs ...string) error {
 	r.initRoute()
 	return r.Run(addrs...)
 }
 
 // gracefulStart uses net http standard server
 // and register channel listen to os signals to make it graceful stop
-func (r *denny) GraceFulStart(addrs ...string) error {
+func (r *Denny) GraceFulStart(addrs ...string) error {
 	var (
 		address = r.resolveAddress(addrs)
 	)
@@ -125,7 +125,7 @@ func (r *denny) GraceFulStart(addrs ...string) error {
 	return nil
 }
 
-func (r *denny) resolveAddress(addr []string) string {
+func (r *Denny) resolveAddress(addr []string) string {
 	switch len(addr) {
 	case 0:
 		if port := os.Getenv("PORT"); port != "" {
