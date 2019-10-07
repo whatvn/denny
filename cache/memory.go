@@ -150,7 +150,7 @@ func (c *memory) expires() []string {
 	return keys
 }
 
-func New(cfg Config) Cache {
+func NewMemoryCache(cfg Config) Cache {
 	c := &memory{
 		storage: &sync.Map{},
 	}
