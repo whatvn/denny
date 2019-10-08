@@ -19,6 +19,23 @@ func (c *redis) Get(key string) interface{} {
 	return s
 }
 
+// GetOrElse return value if it exists, else warmup using warmup function
+func (c *redis) GetOrElse(key string, wuf func(key string) interface{}, expire ...int64) interface{} {
+	v := c.Get(key)
+	if v != nil {
+		return v
+	}
+	if v := wuf(key); v != nil {
+		var expired int64 = 0
+		if len(expire) > 0 {
+			expired = expire[0]
+		}
+		c.Set(key, v, expired)
+		return v
+	}
+	return nil
+}
+
 // Set store key in sync map
 func (c *redis) Set(key string, val interface{}, expire int64) {
 	c.cli.Set(key, val, time.Duration(expire)*time.Second)

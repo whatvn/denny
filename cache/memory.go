@@ -38,6 +38,24 @@ func (c *memory) Get(key string) interface{} {
 	return nil
 }
 
+// GetOrElse return value if it exists, else warmup using warmup function
+func (c *memory) GetOrElse(key string, wuf func(key string) interface{}, expire ...int64) interface{} {
+	el, ok := c.storage.Load(key)
+	if ok {
+		v := el.(*item)
+		return v.value
+	}
+	if v := wuf(key); v != nil {
+		var expired int64 = 0
+		if len(expire) > 0 {
+			expired = expire[0]
+		}
+		c.Set(key, v, expired)
+		return v
+	}
+	return nil
+}
+
 // Set store key in sync map
 func (c *memory) Set(key string, val interface{}, expire int64) {
 	c.storage.Store(key, &item{

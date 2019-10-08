@@ -6,13 +6,15 @@ import (
 )
 
 var (
-	ValueNotExistError = errors.New("value not exist")
+	ValueNotExistError    = errors.New("value not exist")
 	InvalidValueTypeError = errors.New("invalid value type")
 )
 
 type Cache interface {
 	// get cached value by key.
 	Get(key string) interface{}
+	// GetOrElse return value if it exists, else warmup using warmup function
+	GetOrElse(key string, warmUpFunc func(key string) interface{}, expire ...int64) interface{}
 	// GetMulti is a batch version of Get.
 	GetMulti(keys []string) []interface{}
 	// set cached value with key and expire time.
@@ -33,5 +35,5 @@ type Cache interface {
 
 type Config struct {
 	GcDuration time.Duration
-	GcEvery int //second
+	GcEvery    int //second
 }
