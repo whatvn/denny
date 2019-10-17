@@ -69,6 +69,7 @@ func (r *Denny) initRoute() {
 			r.PATCH(p, m.handler)
 		}
 	}
+	gin.SetMode(gin.ReleaseMode)
 	r.initialised = true
 }
 

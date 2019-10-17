@@ -5,7 +5,9 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
-func Binding(ctx *gin.Context) binding.Binding  {
+var Validator = binding.Validator
+
+func Binding(ctx *gin.Context) binding.Binding {
 	if ctx == nil {
 		return nil
 	}
