@@ -1,10 +1,10 @@
 package config
 
 import (
-	goconfig "github.com/micro/go-config"
-	"github.com/micro/go-config/source"
-	"github.com/micro/go-config/source/env"
-	"github.com/micro/go-config/source/file"
+	goconfig "github.com/whatvn/denny/go_config"
+	"github.com/whatvn/denny/go_config/source"
+	"github.com/whatvn/denny/go_config/source/env"
+	"github.com/whatvn/denny/go_config/source/file"
 )
 
 var (
