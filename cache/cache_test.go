@@ -8,10 +8,10 @@ import (
 func TestMemoryCache(t *testing.T) {
 
 	var (
-		cache = New(Config{
+		cache = NewMemoryCache(Config{
 			GcDuration: 2,
 		})
-		key = "name"
+		key   = "name"
 		value = "denny"
 	)
 
