@@ -24,6 +24,36 @@ func createFileForTest(t *testing.T) *os.File {
 	return fh
 }
 
+func createFileForTestArray(t *testing.T) *os.File {
+	data := []byte(`{"foo": "bar", "denny": [{"sister": "jenny"}, {"sister": "jenny1"}]}`)
+	path := filepath.Join(os.TempDir(), fmt.Sprintf("file.%d", time.Now().UnixNano()))
+	fh, err := os.Create(path)
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = fh.Write(data)
+	if err != nil {
+		t.Error(err)
+	}
+
+	return fh
+}
+
+func TestLoadWithGoodFileArray(t *testing.T) {
+	fh := createFileForTestArray(t)
+	path := fh.Name()
+	defer func() {
+		fh.Close()
+		os.Remove(path)
+	}()
+
+	// Create new config
+	// Load file source
+	if err := New(path); err != nil {
+		t.Fatalf("Expected no error but got %v", err)
+	}
+}
+
 func TestLoadWithGoodFile(t *testing.T) {
 	fh := createFileForTest(t)
 	path := fh.Name()
@@ -39,7 +69,7 @@ func TestLoadWithGoodFile(t *testing.T) {
 	}
 }
 
-func TestReadValue(t *testing.T)  {
+func TestReadValue(t *testing.T) {
 	TestLoadWithGoodFile(t)
 	ov := "bar"
 	v := GetString("foo")
@@ -55,7 +85,6 @@ func TestLoadWithInvalidFile(t *testing.T) {
 		os.Remove(path)
 	}()
 
-
 	// Load file source
 	err := New(path,
 		"/i/do/not/exists.json")
@@ -68,13 +97,41 @@ func TestLoadWithInvalidFile(t *testing.T) {
 	}
 }
 
+func TestWithScanToPointerArray(t *testing.T) {
+	type Denny struct {
+		Sister string
+	}
+	var (
+		v     string
+		denny = []Denny{}
+	)
+	TestLoadWithGoodFileArray(t)
+	ov := "bar"
+
+	err := Scan(&v, "foo")
+
+	if err != nil {
+		t.Fatalf("Expect value but got error reading %v", err)
+	}
+	if v != ov {
+		t.Fatalf("Expected bar error but got %v", v)
+	}
+	err = Scan(&denny, "denny")
+
+	if err != nil {
+		t.Fatalf("Expect value but got error reading %v", err)
+	}
+	if denny[0].Sister != "jenny" {
+		t.Fatalf("Expected jenny error but got %v", v)
+	}
+}
 
 func TestWithScanToPointer(t *testing.T) {
 	type Denny struct {
 		Sister string
 	}
 	var (
-		v string
+		v     string
 		denny = &Denny{}
 	)
 	TestLoadWithGoodFile(t)
@@ -88,7 +145,7 @@ func TestWithScanToPointer(t *testing.T) {
 	if v != ov {
 		t.Fatalf("Expected bar error but got %v", v)
 	}
-	err = Scan(denny, "denny")
+	err = Scan(&denny, "denny")
 
 	if err != nil {
 		t.Fatalf("Expect value but got error reading %v", err)
