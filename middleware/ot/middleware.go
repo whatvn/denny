@@ -1,7 +1,6 @@
 package ot
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -34,7 +33,6 @@ func RequestTracer(opts ...OptionFunc) gin.HandlerFunc {
 		ctx, err := tracer.Extract(opentracing.HTTPHeaders, carrier)
 
 		if err == nil {
-			fmt.Printf("tracing.... %+v\n", carrier)
 			span = opentracing.StartSpan(c.FullPath(), opentracing.ChildOf(ctx))
 		}
 
