@@ -15,13 +15,22 @@ func Logger() denny.HandleFunc {
 			statusCode = ctx.Writer.Status()
 			userAgent  = ctx.Request.UserAgent()
 			uri        = ctx.Request.RequestURI
+			errs       = ""
 		)
+
+		if ctx.Errors != nil {
+			bs, err := ctx.Errors.MarshalJSON()
+			if err == nil {
+				errs = string(bs)
+			}
+		}
 		logger.WithFields(map[string]interface{}{
 			"ClientIP":      clientIP,
 			"RequestMethod": method,
 			"Status":        statusCode,
 			"UserAgent":     userAgent,
 			"Uri":           uri,
+			"Errors":        errs,
 		})
 		logger.Infof(time.Now().Format(time.RFC3339))
 	}
