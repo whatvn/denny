@@ -33,7 +33,6 @@ type yController struct {
 }
 
 func (y yController) Handle(ctx *denny.Context) {
-	var span = ot.GetSpan(ctx)
 	y.AddLog("receive request")
 	var str = "hello"
 	y.AddLog("do more thing")
@@ -41,10 +40,17 @@ func (y yController) Handle(ctx *denny.Context) {
 	y.Infof("finished")
 	cli := http.Client{}
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8081/", nil)
-	opentracing.GlobalTracer().Inject(
-		span.Context(),
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(req.Header))
+	var span, ok = ot.GetSpan(ctx)
+	if ok {
+		opentracing.GlobalTracer().Inject(
+			span.Context(),
+			opentracing.HTTPHeaders,
+			opentracing.HTTPHeadersCarrier(req.Header))
+		defer func() {
+			span.Finish()
+		}()
+	}
+
 	y.Infof("headers %v", req.Header)
 	response, _ := cli.Do(req.WithContext(ctx))
 	bytes, _ := ioutil.ReadAll(response.Body)

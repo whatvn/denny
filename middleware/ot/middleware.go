@@ -50,6 +50,10 @@ func RequestTracer(opts ...OptionFunc) gin.HandlerFunc {
 	}
 }
 
-func GetSpan(c *gin.Context) opentracing.Span {
-	return c.MustGet(spanKey).(opentracing.Span)
+func GetSpan(c *gin.Context) (opentracing.Span, bool) {
+	value, exists := c.Get(spanKey)
+	if exists {
+		return value.(opentracing.Span), exists
+	}
+	return nil, exists
 }
