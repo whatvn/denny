@@ -1,6 +1,7 @@
 package ot
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -41,7 +42,6 @@ func RequestTracer(opts ...OptionFunc) gin.HandlerFunc {
 		span.SetTag("resource.name", mwOptions.resourceNameFn(c))
 		c.Request = c.Request.WithContext(opentracing.ContextWithSpan(c, span))
 		mwOptions.beforeHook(span, c)
-		c.Set(spanKey, span)
 		c.Next()
 		mwOptions.afterHook(span, c)
 		ext.Error.Set(span, mwOptions.errorFn(c))
@@ -50,10 +50,10 @@ func RequestTracer(opts ...OptionFunc) gin.HandlerFunc {
 	}
 }
 
-func GetSpan(c *gin.Context) (opentracing.Span, bool) {
-	value, exists := c.Get(spanKey)
-	if exists {
-		return value.(opentracing.Span), exists
+func GetSpan(c context.Context) (opentracing.Span, bool) {
+	var span = opentracing.SpanFromContext(c)
+	if span != nil {
+		return span, true
 	}
-	return nil, exists
+	return nil, false
 }
