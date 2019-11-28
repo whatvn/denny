@@ -46,6 +46,7 @@ func RequestTracer(opts ...OptionFunc) gin.HandlerFunc {
 		mwOptions.afterHook(span, c)
 		ext.Error.Set(span, mwOptions.errorFn(c))
 		ext.HTTPStatusCode.Set(span, uint16(c.Writer.Status()))
+		span.SetTag("handler.error", c.Errors.JSON())
 		span.Finish()
 	}
 }
