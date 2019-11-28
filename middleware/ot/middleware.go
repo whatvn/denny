@@ -7,8 +7,6 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 )
 
-var spanKey = "span"
-
 type options struct {
 	beforeHook      func(opentracing.Span, *gin.Context)
 	afterHook       func(opentracing.Span, *gin.Context)
