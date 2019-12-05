@@ -40,7 +40,7 @@ func (y yController) Handle(ctx *denny.Context) {
 	y.Infof("finished")
 	cli := http.Client{}
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8081/", nil)
-	var span, ok = ot.GetSpan(ctx.Request.Context())
+	var span, ok = ot.GetSpan(ctx)
 	if ok {
 		opentracing.GlobalTracer().Inject(
 			span.Context(),

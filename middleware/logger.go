@@ -15,7 +15,7 @@ func Logger() denny.HandleFunc {
 			statusCode = ctx.Writer.Status()
 			userAgent  = ctx.Request.UserAgent()
 			uri        = ctx.Request.RequestURI
-			errs       = ""
+			errs       string
 		)
 
 		if ctx.Errors != nil {
@@ -30,8 +30,10 @@ func Logger() denny.HandleFunc {
 			"Status":        statusCode,
 			"UserAgent":     userAgent,
 			"Uri":           uri,
-			"Errors":        errs,
 		})
+		if len(errs) > 0 {
+			logger.WithField("Errors", errs)
+		}
 		logger.Infof(time.Now().Format(time.RFC3339))
 	}
 }
