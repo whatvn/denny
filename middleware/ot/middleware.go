@@ -38,7 +38,7 @@ func RequestTracer(opts ...OptionFunc) gin.HandlerFunc {
 		ext.HTTPMethod.Set(span, c.Request.Method)
 		ext.HTTPUrl.Set(span, c.Request.URL.String())
 		span.SetTag("resource.name", mwOptions.resourceNameFn(c))
-		c.Request = c.Request.WithContext(opentracing.ContextWithSpan(c, span))
+		c.Request = c.Request.WithContext(opentracing.ContextWithSpan(c.Request.Context(), span))
 		mwOptions.beforeHook(span, c)
 		c.Next()
 		mwOptions.afterHook(span, c)
