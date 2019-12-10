@@ -99,43 +99,31 @@ func (r *Denny) initRoute() {
 		return
 	}
 	for p, m := range r.handlerMap {
-		switch m.method {
-		case HttpGet:
-			r.GET(p, m.handler)
-		case HttpPost:
-			r.POST(p, m.handler)
-		case HttpDelete:
-			r.DELETE(p, m.handler)
-		case HttpOption:
-			r.OPTIONS(p, m.handler)
-		case HttpPatch:
-			r.PATCH(p, m.handler)
-		}
+		setupHandler(m, r, p)
 	}
 
-	i := log.New()
-	i.Infof("group %v", r.groups[0].path)
 	for _, g := range r.groups {
 		for p, m := range g.handlerMap {
-			i.Infof("path %v", p)
-
-			switch m.method {
-			case HttpGet:
-				g.routerGroup.GET(p, m.handler)
-			case HttpPost:
-				g.routerGroup.POST(p, m.handler)
-			case HttpDelete:
-				g.routerGroup.DELETE(p, m.handler)
-			case HttpOption:
-				g.routerGroup.OPTIONS(p, m.handler)
-			case HttpPatch:
-				g.routerGroup.PATCH(p, m.handler)
-			}
+			setupHandler(m, g.routerGroup, p)
 		}
-
 	}
 	gin.SetMode(gin.ReleaseMode)
 	r.initialised = true
+}
+
+func setupHandler(m *methodHandlerMap, router gin.IRouter, p string) {
+	switch m.method {
+	case HttpGet:
+		router.GET(p, m.handler)
+	case HttpPost:
+		router.POST(p, m.handler)
+	case HttpDelete:
+		router.DELETE(p, m.handler)
+	case HttpOption:
+		router.OPTIONS(p, m.handler)
+	case HttpPatch:
+		router.PATCH(p, m.handler)
+	}
 }
 
 // ServeHTTP conforms to the http.Handler interface.
