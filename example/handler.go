@@ -5,6 +5,7 @@ import (
 	"github.com/uber/jaeger-client-go"
 	zk "github.com/uber/jaeger-client-go/transport/zipkin"
 	"github.com/uber/jaeger-client-go/zipkin"
+	"github.com/whatvn/denny/middleware/expvar"
 	"github.com/whatvn/denny/middleware/ot"
 	"io/ioutil"
 	"net/http"
@@ -81,6 +82,18 @@ func main() {
 		jaeger.TracerOptions.ZipkinSharedRPCSpan(true),
 	)
 	defer closer.Close()
+
+	authorized := server.NewGroup("/")
+	// per group middleware! in this case we use the custom created
+	// AuthRequired() middleware just in the "authorized" group.
+	authorized.Use(middleware.Logger())
+	{
+		authorized.Controller("/login", denny.HttpGet, &xController{})
+		authorized.Controller("/logout", denny.HttpGet, &xController{})
+		authorized.Controller("/profile", denny.HttpGet, &xController{})
+		// nested group
+	}
+	server.Controller("/debug/vars", denny.HttpGet, &expvar.ExpVar{})
 	opentracing.SetGlobalTracer(trace)
 
 	server.Use(middleware.Logger()).Use(ot.RequestTracer())

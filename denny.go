@@ -21,10 +21,21 @@ type methodHandlerMap struct {
 	handler HandleFunc
 }
 
+type group struct {
+	path        string
+	routerGroup *gin.RouterGroup
+	handlerMap  map[string]*methodHandlerMap
+}
+
+func newGroup(path string, routerGroup *gin.RouterGroup) *group {
+	return &group{path: path, routerGroup: routerGroup}
+}
+
 type Denny struct {
 	sync.Mutex
 	*log.Log
 	handlerMap map[string]*methodHandlerMap
+	groups     []*group
 	*gin.Engine
 	initialised bool
 }
@@ -32,13 +43,14 @@ type Denny struct {
 func NewServer() *Denny {
 	return &Denny{
 		handlerMap:  make(map[string]*methodHandlerMap),
+		groups:      []*group{},
 		Engine:      gin.New(),
 		Log:         log.New(),
 		initialised: false,
 	}
 }
 
-func (r *Denny) Controller(path string, method HttpMethod, ctl controller) {
+func (r *Denny) Controller(path string, method HttpMethod, ctl controller) *Denny {
 	r.Lock()
 	defer r.Unlock()
 	m := &methodHandlerMap{
@@ -49,6 +61,37 @@ func (r *Denny) Controller(path string, method HttpMethod, ctl controller) {
 		},
 	}
 	r.handlerMap[path] = m
+	return r
+}
+
+func (r *Denny) NewGroup(path string) *group {
+	r.Lock()
+	defer r.Unlock()
+	routerGroup := r.Group(path)
+	ng := newGroup(path, routerGroup)
+	r.groups = append(r.groups, ng)
+	return ng
+}
+
+func (g *group) Use(handleFunc HandleFunc) *group {
+	g.routerGroup.Use(handleFunc)
+	return g
+}
+
+func (g *group) Controller(path string, method HttpMethod, ctl controller) *group {
+	m := &methodHandlerMap{
+		method: method,
+		handler: func(ctx *Context) {
+			ctl.init()
+			ctl.Handle(ctx)
+		},
+	}
+	if g.handlerMap == nil {
+		g.handlerMap = make(map[string]*methodHandlerMap)
+	}
+
+	g.handlerMap[path] = m
+	return g
 }
 
 func (r *Denny) initRoute() {
@@ -68,6 +111,28 @@ func (r *Denny) initRoute() {
 		case HttpPatch:
 			r.PATCH(p, m.handler)
 		}
+	}
+
+	i := log.New()
+	i.Infof("group %v", r.groups[0].path)
+	for _, g := range r.groups {
+		for p, m := range g.handlerMap {
+			i.Infof("path %v", p)
+
+			switch m.method {
+			case HttpGet:
+				g.routerGroup.GET(p, m.handler)
+			case HttpPost:
+				g.routerGroup.POST(p, m.handler)
+			case HttpDelete:
+				g.routerGroup.DELETE(p, m.handler)
+			case HttpOption:
+				g.routerGroup.OPTIONS(p, m.handler)
+			case HttpPatch:
+				g.routerGroup.PATCH(p, m.handler)
+			}
+		}
+
 	}
 	gin.SetMode(gin.ReleaseMode)
 	r.initialised = true
