@@ -19,3 +19,7 @@ func (c *Controller) init() {
 	c.Log = log.New()
 	c.StructValidator = binding.Validator
 }
+
+func (c *Controller) SetValidator(v binding.StructValidator) {
+	c.StructValidator = v
+}

@@ -40,6 +40,14 @@ func GetString(path ...string) string {
 	return cfg.Get(path...).String("")
 }
 
+func GetStringMap(path ...string) map[string]string {
+	return cfg.Get(path...).StringMap(nil)
+}
+
+func GetStringArray(path ...string) []string {
+	return cfg.Get(path...).StringSlice(nil)
+}
+
 func GetInt(path ...string) int {
 	return cfg.Get(path...).Int(0)
 }
