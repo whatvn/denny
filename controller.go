@@ -8,6 +8,7 @@ import (
 type controller interface {
 	Handle(*Context)
 	init()
+	SetValidator(validator binding.StructValidator)
 }
 
 type Controller struct {

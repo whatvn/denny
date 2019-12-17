@@ -3,6 +3,7 @@ package denny
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/whatvn/denny/log"
 	"net/http"
 	"os"
@@ -25,6 +26,7 @@ type group struct {
 	path        string
 	routerGroup *gin.RouterGroup
 	handlerMap  map[string]*methodHandlerMap
+	engine      *Denny
 }
 
 func newGroup(path string, routerGroup *gin.RouterGroup) *group {
@@ -38,6 +40,7 @@ type Denny struct {
 	groups     []*group
 	*gin.Engine
 	initialised bool
+	validator   binding.StructValidator
 }
 
 func NewServer() *Denny {
@@ -53,6 +56,9 @@ func NewServer() *Denny {
 func (r *Denny) Controller(path string, method HttpMethod, ctl controller) *Denny {
 	r.Lock()
 	defer r.Unlock()
+	if r.validator != nil {
+		ctl.SetValidator(r.validator)
+	}
 	m := &methodHandlerMap{
 		method: method,
 		handler: func(ctx *Context) {
@@ -60,6 +66,7 @@ func (r *Denny) Controller(path string, method HttpMethod, ctl controller) *Denn
 			ctl.Handle(ctx)
 		},
 	}
+
 	r.handlerMap[path] = m
 	return r
 }
@@ -69,6 +76,7 @@ func (r *Denny) NewGroup(path string) *group {
 	defer r.Unlock()
 	routerGroup := r.Group(path)
 	ng := newGroup(path, routerGroup)
+	ng.engine = r
 	r.groups = append(r.groups, ng)
 	return ng
 }
@@ -79,6 +87,9 @@ func (g *group) Use(handleFunc HandleFunc) *group {
 }
 
 func (g *group) Controller(path string, method HttpMethod, ctl controller) *group {
+	if g.engine.validator != nil {
+		ctl.SetValidator(g.engine.validator)
+	}
 	m := &methodHandlerMap{
 		method: method,
 		handler: func(ctx *Context) {
@@ -139,6 +150,11 @@ func (r *Denny) WithMiddleware(middleware ...HandleFunc) {
 func (r *Denny) Start(addrs ...string) error {
 	r.initRoute()
 	return r.Run(addrs...)
+}
+
+func (r *Denny) SetValidator(v binding.StructValidator) *Denny {
+	r.validator = v
+	return r
 }
 
 // gracefulStart uses net http standard server

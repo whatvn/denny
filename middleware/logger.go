@@ -10,27 +10,33 @@ func Logger() denny.HandleFunc {
 	logger := log.New()
 	return func(ctx *denny.Context) {
 		var (
-			clientIP   = ctx.ClientIP()
-			method     = ctx.Request.Method
-			statusCode = ctx.Writer.Status()
-			userAgent  = ctx.Request.UserAgent()
-			uri        = ctx.Request.RequestURI
-			errs       string
+			clientIP = ctx.ClientIP()
+			method   = ctx.Request.Method
+
+			userAgent = ctx.Request.UserAgent()
+			uri       = ctx.Request.RequestURI
+			errs      string
 		)
 
+		logger.WithFields(map[string]interface{}{
+			"ClientIP":      clientIP,
+			"RequestMethod": method,
+			"UserAgent":     userAgent,
+			"Uri":           uri,
+		})
+
+		var (
+			statusCode = ctx.Writer.Status()
+		)
+
+		logger.WithField("Status", statusCode)
+		ctx.Next()
 		if ctx.Errors != nil {
 			bs, err := ctx.Errors.MarshalJSON()
 			if err == nil {
 				errs = string(bs)
 			}
 		}
-		logger.WithFields(map[string]interface{}{
-			"ClientIP":      clientIP,
-			"RequestMethod": method,
-			"Status":        statusCode,
-			"UserAgent":     userAgent,
-			"Uri":           uri,
-		})
 		if len(errs) > 0 {
 			logger.WithField("Errors", errs)
 		}
