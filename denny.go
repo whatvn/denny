@@ -43,7 +43,10 @@ type Denny struct {
 	validator   binding.StructValidator
 }
 
-func NewServer() *Denny {
+func NewServer(debug ...bool) *Denny {
+	if len(debug) == 0 || !debug[0] {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	return &Denny{
 		handlerMap:  make(map[string]*methodHandlerMap),
 		groups:      []*group{},
@@ -118,7 +121,6 @@ func (r *Denny) initRoute() {
 			setupHandler(m, g.routerGroup, p)
 		}
 	}
-	gin.SetMode(gin.ReleaseMode)
 	r.initialised = true
 }
 
