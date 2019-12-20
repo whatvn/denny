@@ -1,10 +1,13 @@
 package config
 
 import (
+	"fmt"
 	goconfig "github.com/whatvn/denny/go_config"
 	"github.com/whatvn/denny/go_config/source"
 	"github.com/whatvn/denny/go_config/source/env"
+	"github.com/whatvn/denny/go_config/source/etcd"
 	"github.com/whatvn/denny/go_config/source/file"
+	"os"
 )
 
 var (
@@ -23,13 +26,30 @@ func New(sources ...string) error {
 	}
 	var cfgSources []source.Source
 	for _, s := range sources {
-		cfgSources = append(cfgSources, file.NewSource(file.WithPath(s)))
+		if !fileExists(s) {
+			fmt.Printf("[Warning] file %s not exist\n")
+		} else {
+			cfgSources = append(cfgSources, file.NewSource(file.WithPath(s)))
+		}
 	}
 	if err := cfg.Load(cfgSources...); err != nil {
 		return err
 	}
 
 	return cfg.Load(env.NewSource())
+}
+
+func WithEtcd(opt ...source.Option) {
+	var (
+		s = etcd.NewSource(opt...)
+	)
+	if err := cfg.Load(s); err != nil {
+		panic(err)
+	}
+}
+
+func Watch() (goconfig.Watcher, error) {
+	return cfg.Watch()
 }
 
 func Reload() error {
@@ -58,4 +78,17 @@ func Scan(t interface{}, path ...string) error {
 
 func Map() map[string]interface{} {
 	return cfg.Map()
+}
+
+func fileExists(path string) bool {
+	fh, err := os.Open(path)
+	defer func() {
+		if fh != nil {
+			_ = fh.Close()
+		}
+	}()
+	if err != nil {
+		return false
+	}
+	return true
 }

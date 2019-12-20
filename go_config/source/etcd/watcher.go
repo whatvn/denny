@@ -3,17 +3,17 @@ package etcd
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
-	cetcd "github.com/coreos/etcd/clientv3"
 	"github.com/whatvn/denny/go_config/source"
+	cetcd "go.etcd.io/etcd/clientv3"
 )
 
 type watcher struct {
-	opts        source.Options
-	name        string
-	stripPrefix string
+	opts source.Options
+	name string
 
 	sync.RWMutex
 	cs *source.ChangeSet
@@ -22,44 +22,24 @@ type watcher struct {
 	exit chan bool
 }
 
-func newWatcher(key, strip string, wc cetcd.Watcher, cs *source.ChangeSet, opts source.Options) (source.Watcher, error) {
+func newWatcher(key string, wc cetcd.Watcher, cs *source.ChangeSet, opts source.Options) (source.Watcher, error) {
 	w := &watcher{
-		opts:        opts,
-		name:        "etcd",
-		stripPrefix: strip,
-		cs:          cs,
-		ch:          make(chan *source.ChangeSet),
-		exit:        make(chan bool),
+		opts: opts,
+		name: "etcd",
+		cs:   cs,
+		ch:   make(chan *source.ChangeSet),
+		exit: make(chan bool),
 	}
 
-	ch := wc.Watch(context.Background(), key, cetcd.WithPrefix())
+	ch := wc.Watch(context.Background(), key)
 
 	go w.run(wc, ch)
 
 	return w, nil
 }
 
-func (w *watcher) handle(evs []*cetcd.Event) {
-	w.RLock()
-	data := w.cs.Data
-	w.RUnlock()
-
-	var vals map[string]interface{}
-
-	// unpackage existing changeset
-	if err := w.opts.Encoder.Decode(data, &vals); err != nil {
-		return
-	}
-
-	// update base changeset
-	d := makeEvMap(w.opts.Encoder, vals, evs, w.stripPrefix)
-
-	// pack the changeset
-	b, err := w.opts.Encoder.Encode(d)
-	if err != nil {
-		return
-	}
-
+func (w *watcher) handle(ev *cetcd.Event) {
+	b := ev.Kv.Value
 	// create new changeset
 	cs := &source.ChangeSet{
 		Timestamp: time.Now(),
@@ -73,7 +53,6 @@ func (w *watcher) handle(evs []*cetcd.Event) {
 	w.Lock()
 	w.cs = cs
 	w.Unlock()
-
 	// send update
 	w.ch <- cs
 }
@@ -85,9 +64,11 @@ func (w *watcher) run(wc cetcd.Watcher, ch cetcd.WatchChan) {
 			if !ok {
 				return
 			}
-			w.handle(rsp.Events)
+			for _, ev := range rsp.Events {
+				w.handle(ev)
+			}
 		case <-w.exit:
-			wc.Close()
+			_ = wc.Close()
 			return
 		}
 	}

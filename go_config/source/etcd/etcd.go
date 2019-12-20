@@ -4,51 +4,36 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
-	cetcd "github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/whatvn/denny/go_config/source"
+	cetcd "go.etcd.io/etcd/clientv3"
 )
 
 // Currently a single etcd reader
 type etcd struct {
-	prefix      string
-	stripPrefix string
-	opts        source.Options
-	client      *cetcd.Client
-	cerr        error
+	path   string
+	opts   source.Options
+	client *cetcd.Client
+	cerr   error
 }
-
-var (
-	DefaultPrefix = "/micro/config/"
-)
 
 func (c *etcd) Read() (*source.ChangeSet, error) {
 	if c.cerr != nil {
 		return nil, c.cerr
 	}
 
-	rsp, err := c.client.Get(context.Background(), c.prefix, cetcd.WithPrefix())
+	rsp, err := c.client.Get(context.Background(), c.path)
 	if err != nil {
 		return nil, err
 	}
 
 	if rsp == nil || len(rsp.Kvs) == 0 {
-		return nil, fmt.Errorf("source not found: %s", c.prefix)
+		return nil, fmt.Errorf("source not found: %s", c.path)
 	}
 
-	var kvs []*mvccpb.KeyValue
-	for _, v := range rsp.Kvs {
-		kvs = append(kvs, (*mvccpb.KeyValue)(v))
-	}
-
-	data := makeMap(c.opts.Encoder, kvs, c.stripPrefix)
-
-	b, err := c.opts.Encoder.Encode(data)
-	if err != nil {
-		return nil, fmt.Errorf("error reading source: %v", err)
-	}
+	b := rsp.Kvs[0].Value
 
 	cs := &source.ChangeSet{
 		Timestamp: time.Now(),
@@ -73,7 +58,7 @@ func (c *etcd) Watch() (source.Watcher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newWatcher(c.prefix, c.stripPrefix, c.client.Watcher, cs, c.opts)
+	return newWatcher(c.path, c.client.Watcher, cs, c.opts)
 }
 
 func NewSource(opts ...source.Option) source.Source {
@@ -120,22 +105,20 @@ func NewSource(opts ...source.Option) source.Source {
 	// use default config
 	client, err := cetcd.New(config)
 
-	prefix := DefaultPrefix
-	sp := ""
-	f, ok := options.Context.Value(prefixKey{}).(string)
-	if ok {
-		prefix = f
+	path, ok := options.Context.Value(pathKey{}).(string)
+
+	if !ok {
+		panic("cannot setup etcd source with empty path")
 	}
 
-	if b, ok := options.Context.Value(stripPrefixKey{}).(bool); ok && b {
-		sp = prefix
+	if strings.HasSuffix(path, "/") {
+		panic("etcd path cannot be directory")
 	}
 
 	return &etcd{
-		prefix:      prefix,
-		stripPrefix: sp,
-		opts:        options,
-		client:      client,
-		cerr:        err,
+		path:   path,
+		opts:   options,
+		client: client,
+		cerr:   err,
 	}
 }
