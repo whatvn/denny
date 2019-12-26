@@ -3,7 +3,6 @@ package etcd
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
 	"net"
 	"strings"
 	"time"
@@ -95,9 +94,6 @@ func NewSource(opts ...source.Option) source.Source {
 	config := cetcd.Config{
 		Endpoints:   endpoints,
 		DialTimeout: dialTimeout,
-		DialOptions: []grpc.DialOption{
-			grpc.WithTimeout(1 * time.Second),
-		},
 	}
 
 	u, ok := options.Context.Value(authKey{}).(*authCreds)
