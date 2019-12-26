@@ -5,8 +5,8 @@ import (
 	"github.com/whatvn/denny/go_config/source/etcd"
 )
 
-func WithEtcdAddress(addr string) source.Option {
-	return etcd.WithAddress(addr)
+func WithEtcdAddress(addr ...string) source.Option {
+	return etcd.WithAddress(addr...)
 }
 
 func WithEtdAuth(user, pass string) source.Option {

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/whatvn/denny/config"
+	"github.com/whatvn/denny/log"
 	"os"
 	"path/filepath"
 	"time"
@@ -29,7 +30,8 @@ type Denny struct {
 }
 
 var (
-	denny = &Denny{}
+	denny  = &Denny{}
+	logger = log.New()
 )
 
 func load() {
@@ -39,29 +41,29 @@ func load() {
 func main() {
 	f, err := configFile()
 	if err != nil {
-		fmt.Println(err)
+		logger.Infof("error %v", err)
 	}
 	// read config from file
 	config.New(f.Name())
 
 	config.WithEtcd(
-		config.WithEtcdAddress("http://127.0.0.1:2379"),
+		config.WithEtcdAddress("10.109.3.93:7379"),
 		config.WithPath("/acquiringcore/ae/config"),
 	)
 
 	load()
-	fmt.Println(denny.Age)
-	fmt.Println(denny.Sister)
+	logger.Println(denny.Age)
+	logger.Println(denny.Sister)
 	w, _ := config.Watch()
 
 	for {
 
 		_, err := w.Next()
 		if err != nil {
-			// do something
+			logger.Error(err)
 		}
 		load()
-		fmt.Println(denny.Age)
-		fmt.Println(denny.Sister)
+		logger.Println(denny.Age)
+		logger.Println(denny.Sister)
 	}
 }
