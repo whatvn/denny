@@ -10,7 +10,7 @@ import (
 )
 
 func configFile() (*os.File, error) {
-	data := []byte(`{"foo": "bar", "denny": {"sister": "jenny"}}`)
+	data := []byte(`{"foo": "bar", "dennyObj": {"sister": "jenny"}}`)
 	path := filepath.Join(os.TempDir(), fmt.Sprintf("file.%d", time.Now().UnixNano()))
 	fh, err := os.Create(path)
 	if err != nil {
@@ -30,12 +30,12 @@ type Denny struct {
 }
 
 var (
-	denny  = &Denny{}
-	logger = log.New()
+	dennyObj = &Denny{}
+	logger   = log.New()
 )
 
 func load() {
-	config.Scan(denny, "denny")
+	config.Scan(dennyObj, "dennyObj")
 }
 
 func main() {
@@ -52,8 +52,8 @@ func main() {
 	)
 
 	load()
-	logger.Println(denny.Age)
-	logger.Println(denny.Sister)
+	logger.Println(dennyObj.Age)
+	logger.Println(dennyObj.Sister)
 	w, _ := config.Watch()
 
 	for {
@@ -63,7 +63,7 @@ func main() {
 			logger.Error(err)
 		}
 		load()
-		logger.Println(denny.Age)
-		logger.Println(denny.Sister)
+		logger.Println(dennyObj.Age)
+		logger.Println(dennyObj.Sister)
 	}
 }

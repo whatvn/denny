@@ -18,13 +18,15 @@ type xController struct {
 }
 
 func (x xController) Handle(ctx *denny.Context) {
-	x.Infof("log something to test log init")
-	x.WithField("x", "y")
-	x.AddLog("receive request")
+	var logger = middleware.GetLogger(ctx)
+
+	logger.AddLog("log something to test log init")
+	logger.WithField("x", "y")
+	logger.AddLog("receive request")
 	var str = "hello"
-	x.AddLog("do more thing")
+	logger.AddLog("do more thing")
 	str += " world"
-	x.Infof("finished")
+	logger.AddLog("finished")
 	ctx.Writer.Write([]byte(str))
 }
 
@@ -35,7 +37,8 @@ type yController struct {
 func (y yController) Handle(ctx *denny.Context) {
 	y.AddLog("receive request")
 	var str = "hello"
-	y.AddLog("do more thing")
+	var logger = middleware.GetLogger(ctx)
+	logger.AddLog("do more thing")
 	str += " denny"
 	y.Infof("finished")
 	cli := http.Client{}
@@ -51,7 +54,7 @@ func (y yController) Handle(ctx *denny.Context) {
 		}()
 	}
 
-	y.Infof("headers %v", req.Header)
+	logger.AddLog("headers", req.Header)
 	response, _ := cli.Do(req.WithContext(ctx))
 	bytes, _ := ioutil.ReadAll(response.Body)
 	ctx.Writer.Write([]byte(str + " remote " + string(bytes)))
