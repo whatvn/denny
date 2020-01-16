@@ -18,7 +18,7 @@ type xController struct {
 }
 
 func (x xController) Handle(ctx *denny.Context) {
-	var logger = middleware.GetLogger(ctx)
+	var logger = denny.GetLogger(ctx)
 
 	logger.AddLog("log something to test log init")
 	logger.WithField("x", "y")
@@ -37,7 +37,7 @@ type yController struct {
 func (y yController) Handle(ctx *denny.Context) {
 	y.AddLog("receive request")
 	var str = "hello"
-	var logger = middleware.GetLogger(ctx)
+	var logger = denny.GetLogger(ctx)
 	logger.AddLog("do more thing")
 	str += " denny"
 	y.Infof("finished")

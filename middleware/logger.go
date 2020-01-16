@@ -1,13 +1,12 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/whatvn/denny"
 	"github.com/whatvn/denny/log"
 	"time"
 )
 
-var (
+const (
 	logKey = "dennyLogger"
 )
 
@@ -46,15 +45,4 @@ func Logger() denny.HandleFunc {
 		}
 		logger.Infof(time.Now().Format(time.RFC3339))
 	}
-}
-
-func GetLogger(ctx *denny.Context) *log.Log {
-	logger, ok := ctx.Get(logKey)
-	if !ok {
-		return log.New()
-	}
-	if l, ok := logger.(*log.Log); ok {
-		return l
-	}
-	panic(fmt.Errorf("%v is not logger", logger))
 }
