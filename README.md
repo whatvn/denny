@@ -1,6 +1,7 @@
 # denny
-common http server which simplify request handling and logging by combining libraries, framework to be able to 
 
+common http server which simplify request handling and logging by combining libraries, framework to be able to 
+- support both http and grpc in one controller, write once, support both protocol 
 - use class base request controller, one controller for one handler 
 - make cache usage simpler
 - use open tracing  
