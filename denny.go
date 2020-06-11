@@ -3,7 +3,6 @@ package denny
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -367,7 +366,6 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 			}
 		}()
 
-		fmt.Println("what the fuck")
 		if err = muxer.Serve(); err != nil {
 			panic(err)
 		}

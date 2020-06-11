@@ -14,4 +14,10 @@ func main() {
 	client := pb.NewHelloServiceClient(conn)
 	response, err := client.SayHelloAnonymous(context.Background(), &empty.Empty{})
 	fmt.Println(response, err)
+
+	response, err = client.SayHelloAnonymous(context.Background(), &empty.Empty{})
+	fmt.Println(response, err)
+
+	response, err = client.SayHelloAnonymous(context.Background(), &empty.Empty{})
+	fmt.Println(response, err)
 }
