@@ -336,12 +336,13 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 		httpListener net.Listener
 		muxer        cmux.CMux
 		err          error
+		addr         = r.resolveAddress(addrs)
 	)
 
 	r.initRoute()
 
 	if enableBrpc {
-		listener, err = net.Listen("tcp", "127.0.0.1:8080")
+		listener, err = net.Listen("tcp", addr)
 		if err != nil {
 			return err
 		}
