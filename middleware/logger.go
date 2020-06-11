@@ -13,6 +13,7 @@ const (
 func Logger() denny.HandleFunc {
 	return func(ctx *denny.Context) {
 		logger := log.New(&log.JSONFormatter{})
+		start := time.Now()
 		var (
 			clientIP = ctx.ClientIP()
 			method   = ctx.Request.Method
@@ -43,6 +44,6 @@ func Logger() denny.HandleFunc {
 		if len(errs) > 0 {
 			logger.WithField("Errors", errs)
 		}
-		logger.Infof(time.Now().Format(time.RFC3339))
+		logger.WithField("latency", time.Now().Sub(start).Milliseconds()).Infof("finish")
 	}
 }

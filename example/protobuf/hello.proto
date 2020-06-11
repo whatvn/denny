@@ -1,0 +1,20 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+package pb;
+
+//option go_package = "example.com/foo/bar";
+// protoc -I=. *.proto --go_out=plugins=grpc:.
+
+message HelloRequest {
+	string greeting = 1;
+}
+
+message HelloResponse {
+	string reply = 1;
+}
+
+service HelloService {
+	rpc SayHelloAnonymous(google.protobuf.Empty) returns (HelloResponse);
+	rpc SayHello(HelloRequest) returns (HelloResponse);
+}

@@ -49,7 +49,7 @@ func (l *Log) addStep() int32 {
 func (l *Log) AddLog(line string, format ...interface{}) *Log {
 	step := fmt.Sprintf("STEP_%d", l.addStep())
 	if len(format) > 0 {
-		logLine := fmt.Sprintf(line, format)
+		logLine := fmt.Sprintf(line, format...)
 		l.Entry = l.Entry.WithField(step, logLine)
 		return l
 	}
