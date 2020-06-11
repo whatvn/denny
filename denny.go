@@ -373,6 +373,7 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 	} else {
 		go func() {
 			// service connections
+			httpSrv.Addr = addr
 			r.Info("start http server...")
 			if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				r.Fatalf("listen: %v\n", err)
