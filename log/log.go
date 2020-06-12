@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+const (
+	LogKey = "DennyLogger"
+)
+
 type Log struct {
 	*logrus.Entry
 	sync.Mutex

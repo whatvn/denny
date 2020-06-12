@@ -1,21 +1,30 @@
 package denny
 
 import (
-	"fmt"
+	"context"
 	"github.com/whatvn/denny/log"
 )
 
-const (
-	logKey = "dennyLogger"
-)
-
-func GetLogger(ctx *Context) *log.Log {
-	logger, ok := ctx.Get(logKey)
+func GetLogger(ctx context.Context) *log.Log {
+	var (
+		logger interface{}
+	)
+	if logCtx, ok := ctx.(*Context); ok {
+		logger, ok := logCtx.Get(log.LogKey)
+		if !ok {
+			logger := log.New()
+			logCtx.Set(log.LogKey, logger)
+			return logger
+		}
+		return logger.(*log.Log)
+	}
+	logger, ok := ctx.Value(log.LogKey).(*log.Log)
 	if !ok {
-		return log.New()
+		logger := log.New()
+		ctx = context.WithValue(
+			ctx,
+			log.LogKey, logger)
+		return logger
 	}
-	if l, ok := logger.(*log.Log); ok {
-		return l
-	}
-	panic(fmt.Errorf("%v is not logger", logger))
+	return logger.(*log.Log)
 }

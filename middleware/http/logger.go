@@ -1,13 +1,9 @@
-package middleware
+package http
 
 import (
 	"github.com/whatvn/denny"
 	"github.com/whatvn/denny/log"
 	"time"
-)
-
-const (
-	logKey = "dennyLogger"
 )
 
 func Logger() denny.HandleFunc {
@@ -29,7 +25,7 @@ func Logger() denny.HandleFunc {
 			"UserAgent":     userAgent,
 			"Uri":           uri,
 		})
-		ctx.Set(logKey, logger)
+		ctx.Set(log.LogKey, logger)
 		ctx.Next()
 		var (
 			statusCode = ctx.Writer.Status()
