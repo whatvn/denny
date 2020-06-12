@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"github.com/whatvn/denny"
 	"github.com/whatvn/denny/log"
 	"time"
@@ -9,7 +10,6 @@ import (
 func Logger() denny.HandleFunc {
 	return func(ctx *denny.Context) {
 		logger := log.New(&log.JSONFormatter{})
-		start := time.Now()
 		var (
 			clientIP = ctx.ClientIP()
 			method   = ctx.Request.Method
@@ -25,6 +25,7 @@ func Logger() denny.HandleFunc {
 			"UserAgent":     userAgent,
 			"Uri":           uri,
 		})
+		ctx.Request = ctx.Request.WithContext(context.WithValue(ctx, log.LogKey, logger))
 		ctx.Set(log.LogKey, logger)
 		ctx.Next()
 		var (
@@ -40,6 +41,6 @@ func Logger() denny.HandleFunc {
 		if len(errs) > 0 {
 			logger.WithField("Errors", errs)
 		}
-		logger.WithField("latency", time.Now().Sub(start).Milliseconds()).Infof("finish")
+		logger.Infof(time.Now().Format(time.RFC3339))
 	}
 }
