@@ -31,6 +31,17 @@ type methodHandlerMap struct {
 	handler HandleFunc
 }
 
+var notFoundHandlerFunc = func(ctx *Context) {
+	ctx.JSON(
+		http.StatusOK,
+		gin.H{
+			"path":   ctx.Request.RequestURI,
+			"status": http.StatusNotFound,
+			"method": ctx.Request.Method,
+		},
+	)
+}
+
 type group struct {
 	path        string
 	routerGroup *gin.RouterGroup
@@ -284,6 +295,9 @@ func (r *Denny) initRoute() {
 			setupHandler(m, g.routerGroup, p)
 		}
 	}
+
+	r.NoRoute(notFoundHandlerFunc)
+	r.NoMethod(notFoundHandlerFunc)
 	r.initialised = true
 }
 
