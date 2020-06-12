@@ -17,6 +17,7 @@ func Logger() denny.HandleFunc {
 			userAgent = ctx.Request.UserAgent()
 			uri       = ctx.Request.RequestURI
 			errs      string
+			start     = time.Now()
 		)
 
 		logger.WithFields(map[string]interface{}{
@@ -41,6 +42,8 @@ func Logger() denny.HandleFunc {
 		if len(errs) > 0 {
 			logger.WithField("Errors", errs)
 		}
-		logger.Infof(time.Now().Format(time.RFC3339))
+		end := time.Now()
+		logger.WithField("end", end)
+		logger.Infof("latency: %v", end.Sub(start))
 	}
 }
