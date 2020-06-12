@@ -35,8 +35,6 @@ func (s *Hello) SayHelloAnonymous(ctx context.Context, in *empty.Empty) (*pb.Hel
 	)
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "sayHello")
-
-	logger.Infof("span %v", span.Tracer() != nil)
 	defer span.Finish()
 	response := &pb.HelloResponse{
 		Reply: "hi",
@@ -85,10 +83,9 @@ func main() {
 		"127.0.0.1",
 		6831,
 		65000,
-		"brpc.culi.ngu.nhu.heo",
+		"brpc.server.demo",
 	)
 
-	tracer.StartSpan("hello")
 	opentracing.SetGlobalTracer(tracer)
 
 	server := denny.NewServer(true)

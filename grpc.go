@@ -3,6 +3,7 @@ package denny
 import (
 	"context"
 	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	grpc_middleware "github.com/whatvn/denny/middleware/grpc"
 	"google.golang.org/grpc"
 )
 
@@ -40,11 +41,12 @@ func combinator(first, second grpc.UnaryServerInterceptor) grpc.UnaryServerInter
 }
 
 func NewGrpcServer(interceptors ...grpc.UnaryServerInterceptor) *grpc.Server {
-	//var (
-	//	builtinInterceptors = []grpc.UnaryServerInterceptor{
-	//		//grpc_middleware.LoggerInterceptor,
-	//	}
-	//)
-	interceptor := grpc_opentracing.UnaryServerInterceptor()
-	return grpc.NewServer(grpc.UnaryInterceptor(interceptor))
+	var (
+		builtinInterceptors = []grpc.UnaryServerInterceptor{
+			grpc_middleware.LoggerInterceptor,
+			grpc_opentracing.UnaryServerInterceptor(),
+		}
+	)
+	serverInterceptors := chainUnaryServerInterceptors(append(builtinInterceptors, interceptors...)...)
+	return grpc.NewServer(grpc.UnaryInterceptor(serverInterceptors))
 }
