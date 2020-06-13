@@ -16,6 +16,8 @@ import (
 // grpc
 type Hello struct{}
 
+// groupPath + "/hello/" + "sayhello"
+//
 func (s *Hello) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloResponse, error) {
 	var (
 		logger = denny.GetLogger(ctx)
@@ -27,6 +29,12 @@ func (s *Hello) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRes
 	logger.WithField("response", response)
 	return response, nil
 }
+
+// http get request
+// when define grpc method with input is empty.Empty object, denny will consider request as get request
+// router will be:
+// groupPath + "/hello/" + "sayhelloanonymous"
+// rule is rootRoute + "/" lowerCase(serviceName) + "/" lowercase(methodName)
 
 func (s *Hello) SayHelloAnonymous(ctx context.Context, in *empty.Empty) (*pb.HelloResponse, error) {
 
@@ -102,6 +110,8 @@ func main() {
 
 	//// then http
 	authorized := server.NewGroup("/")
+	// http://127.0.0.1:8080/hello/sayhello  (POST)
+	// http://127.0.0.1:8080/hello/sayhelloanonymous  (GET)
 	authorized.BrpcController(&Hello{})
 
 	// start server in dual mode
