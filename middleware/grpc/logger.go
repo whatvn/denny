@@ -28,7 +28,11 @@ func LoggerInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySer
 	})
 
 	defer func() {
-		code := codes.OK
+		var (
+			code = codes.OK
+			end  = time.Now()
+		)
+
 		switch {
 		case err != nil:
 			code = status.Code(err)
@@ -36,7 +40,7 @@ func LoggerInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySer
 			code = codes.Internal
 		}
 		logger.WithField("code", code.String())
-		logger.Infof("latency: ", time.Now().Sub(start))
+		logger.Infof("latency: %d", end.Sub(start).Milliseconds())
 
 	}()
 

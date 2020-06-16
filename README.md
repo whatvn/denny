@@ -29,13 +29,13 @@ type xController struct {
 	denny.Controller
 }
 
+// define handle function for controller  
 func (x xController) Handle(ctx *denny.Context) {
 	x.AddLog("receive request")
 	var str = "hello"
-	x.AddLog("do more thing")
+	x.AddLog("do more thing") // logger middleware will log automatically when request finished
 	str += " world"
 	ctx.Writer.Write([]byte(str))
-	x.Infof("finished")
 }
 
 func main() {

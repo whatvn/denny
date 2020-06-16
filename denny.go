@@ -357,7 +357,7 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 	if enableBrpc {
 		listener, err = net.Listen("tcp", addr)
 		if err != nil {
-			return err
+			r.Fatalf("listen: %v\n", err)
 		}
 		// Create a cmux.
 		muxer = cmux.New(listener)
@@ -381,7 +381,7 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 		}()
 
 		if err = muxer.Serve(); err != nil {
-			panic(err)
+			r.Fatalf("listen: %v\n", err)
 		}
 
 	} else {
