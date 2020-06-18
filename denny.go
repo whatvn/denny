@@ -67,6 +67,7 @@ type Denny struct {
 	registry naming.Registry
 }
 
+// NewServer init denny with default parameter
 func NewServer(debug ...bool) *Denny {
 	if len(debug) == 0 || !debug[0] {
 		gin.SetMode(gin.ReleaseMode)
@@ -80,11 +81,13 @@ func NewServer(debug ...bool) *Denny {
 	}
 }
 
+// WithRegistry makes Denny discoverable via naming registry
 func (r *Denny) WithRegistry(registry naming.Registry) *Denny {
 	r.registry = registry
 	return r
 }
 
+// WithGrpcServer turns Denny into grpc server
 func (r *Denny) WithGrpcServer(server *grpc.Server) *Denny {
 	if server == nil {
 		panic("server is not initialised")
@@ -93,6 +96,7 @@ func (r *Denny) WithGrpcServer(server *grpc.Server) *Denny {
 	return r
 }
 
+// Controller register a controller with given path, method to http routes
 func (r *Denny) Controller(path string, method HttpMethod, ctl controller) *Denny {
 	r.Lock()
 	defer r.Unlock()
@@ -111,6 +115,7 @@ func (r *Denny) Controller(path string, method HttpMethod, ctl controller) *Denn
 	return r
 }
 
+// NewGroup adds new group into server routes
 func (r *Denny) NewGroup(path string) *group {
 	r.Lock()
 	defer r.Unlock()
@@ -121,6 +126,7 @@ func (r *Denny) NewGroup(path string) *group {
 	return ng
 }
 
+// same with WithMiddleware
 func (g *group) Use(handleFunc HandleFunc) *group {
 	g.routerGroup.Use(handleFunc)
 	return g
@@ -160,6 +166,10 @@ func httpRouterPath(controllerName string, method reflect.Method) string {
 var underlyContextType = reflect.TypeOf(new(context.Context)).Elem()
 var underlyErrorType = reflect.TypeOf(new(error)).Elem()
 
+// BrpcController register a grpc service implements as multiple http enpoints
+// endpoint usually start with service name (class name), and end with method name
+// so if your have your service name: Greeting and have method hi, when registered with server
+// under group v1, your http endpoint will be /v1/greeting/hi
 func (g *group) BrpcController(controllerGroup interface{}) {
 	g.registerHttpController(controllerGroup)
 }
@@ -331,21 +341,29 @@ func (r *Denny) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.Engine.ServeHTTP(w, req)
 }
 
+// WithMiddleware registers middleware to http server
+// only gin style middleware is supported
 func (r *Denny) WithMiddleware(middleware ...HandleFunc) {
 	r.Use(middleware...)
 }
 
+// Start http server with given address
+// Deprecated: use GraceFulStart(addrs ...string) instead.
 func (r *Denny) Start(addrs ...string) error {
 	r.initRoute()
 	return r.Run(addrs...)
 }
 
+// SetValidator overwrites default gin validate with provides validator
+// we're using v10 validator
 func (r *Denny) SetValidator(v binding.StructValidator) *Denny {
 	r.validator = v
 	return r
 }
 
-// gracefulStart uses net http standard server
+// GraceFulStart uses net http standard server
+// it also detect if grpc server and discovery registry are available
+// to start Denny in brpc mode, in this mode, server will support both protocol using same port
 // and register channel listen to os signals to make it graceful stop
 func (r *Denny) GraceFulStart(addrs ...string) error {
 	var (
