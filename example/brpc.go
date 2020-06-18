@@ -10,6 +10,7 @@ import (
 	"github.com/whatvn/denny"
 	pb "github.com/whatvn/denny/example/protobuf"
 	"github.com/whatvn/denny/middleware/http"
+	"github.com/whatvn/denny/naming/etcd"
 	"io"
 )
 
@@ -45,7 +46,7 @@ func (s *Hello) SayHelloAnonymous(ctx context.Context, in *empty.Empty) (*pb.Hel
 	span, ctx := opentracing.StartSpanFromContext(ctx, "sayHello")
 	defer span.Finish()
 	response := &pb.HelloResponse{
-		Reply: "hi",
+		Reply: "ha",
 	}
 
 	logger.WithField("response", response)
@@ -59,7 +60,7 @@ type TestController struct {
 
 func (t *TestController) Handle(ctx *denny.Context) {
 	ctx.JSON(200, &pb.HelloResponse{
-		Reply: "hi",
+		Reply: "ha",
 	})
 }
 
@@ -87,13 +88,14 @@ func initTracerUDP(jaegerAddr string, port int, packetLength int, serviceName st
 }
 
 func main() {
+
+	// open tracing
 	tracer, _ := initTracerUDP(
 		"127.0.0.1",
 		6831,
 		65000,
 		"brpc.server.demo",
 	)
-
 	opentracing.SetGlobalTracer(tracer)
 
 	server := denny.NewServer(true)
@@ -114,6 +116,10 @@ func main() {
 	// http://127.0.0.1:8080/hello/sayhelloanonymous  (GET)
 	authorized.BrpcController(&Hello{})
 
+	// naming registry
+	registry := etcd.New("127.0.0.1:7379", "demo.brpc.svc")
+	server.WithRegistry(registry)
+
 	// start server in dual mode
-	server.GraceFulStart()
+	server.GraceFulStart(":8081")
 }

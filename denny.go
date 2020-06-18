@@ -8,6 +8,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/soheilhy/cmux"
 	"github.com/whatvn/denny/log"
+	"github.com/whatvn/denny/naming"
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
@@ -62,6 +63,8 @@ type Denny struct {
 	initialised bool
 	validator   binding.StructValidator
 	grpcServer  *grpc.Server
+	// for naming registry/dicovery
+	registry naming.Registry
 }
 
 func NewServer(debug ...bool) *Denny {
@@ -77,11 +80,17 @@ func NewServer(debug ...bool) *Denny {
 	}
 }
 
-func (r *Denny) WithGrpcServer(server *grpc.Server) {
+func (r *Denny) WithRegistry(registry naming.Registry) *Denny {
+	r.registry = registry
+	return r
+}
+
+func (r *Denny) WithGrpcServer(server *grpc.Server) *Denny {
 	if server == nil {
 		panic("server is not initialised")
 	}
 	r.grpcServer = server
+	return r
 }
 
 func (r *Denny) Controller(path string, method HttpMethod, ctl controller) *Denny {
@@ -359,6 +368,18 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 		if err != nil {
 			r.Fatalf("listen: %v\n", err)
 		}
+
+		// register service into registered registry
+		if r.registry != nil {
+			ip, err := localIp()
+			if err != nil {
+				panic(err)
+			}
+			if err = r.registry.Register(ip+addr, 5); err != nil {
+				panic(err)
+			}
+		}
+
 		// Create a cmux.
 		muxer = cmux.New(listener)
 		// Match connections in order:
@@ -432,4 +453,22 @@ func (r *Denny) resolveAddress(addr []string) string {
 	default:
 		panic("too many parameters")
 	}
+}
+
+func localIp() (string, error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, a := range addrs {
+		if ipnet, ok := a.(*net.IPNet); ok &&
+			!ipnet.IP.IsLoopback() {
+			ipv4 := ipnet.IP.To4()
+			if ipv4 != nil && strings.Index(ipv4.String(), "127") != 0 {
+				return ipv4.String(), nil
+			}
+		}
+	}
+	return "", errors.New("cannot lookup local ip address")
 }
