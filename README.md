@@ -11,7 +11,7 @@ common http server which simplify request handling and logging by combining libr
 
 `denny` is not a http/grpc server from scratch, by now it's based on [gin framework](https://github.com/gin-gonic/gin) and google grpc server, with help of Golang reflection to support both protocol while requires user just minimum about of work. Eq: you just need to write your service in grpc, `denny` will also support HTTP for your implementation. 
 
-`denny` is different from grpc gateway, grpc gateway use code generation to generate http proxy call, a request to http enpoint of grpc gateway will also trigger another grpc call to your service. it's http proxy to grpc, with `denny`, a call to http will only invoke the code you wrote, does not trigger grpc call. It applies also for grpc call.
+`denny` is different from [grpc gateway](https://github.com/grpc-ecosystem/grpc-gateway), grpc gateway uses code generation to generate http proxy call, a request to http enpoint of grpc gateway will also trigger another grpc call to your service. it's http proxy to grpc, with `denny`, a call to http will only invoke the code you wrote, does not trigger grpc call. It applies also for grpc call. Because of that, using grpc your service has to start with 2 services port, 1 for http and 1 for grpc, `denny` need only one for both protocol.
 
 It also borrow many component from well known libraries (go-config, beego, logrus...).  
 
