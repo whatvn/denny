@@ -382,6 +382,7 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 	)
 
 	r.initRoute()
+	enableHttp := len(r.Handlers) > 0
 
 	if enableBrpc {
 		listener, err = net.Listen("tcp", addr)
@@ -407,23 +408,37 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 		grpcListener = muxer.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
 		httpListener = muxer.Match(cmux.HTTP1Fast())
 
+		wg := sync.WaitGroup{}
+		if enableHttp {
+			wg.Add(1)
+		}
+		if enableBrpc {
+			wg.Add(1)
+		}
+
 		go func() {
 			r.Info("start grpc server...")
+			wg.Done()
 			if err := r.grpcServer.Serve(grpcListener); err != nil {
 				r.Fatalf("listen: %v\n", err)
 			}
 		}()
 
+		if enableHttp {
+			go func() {
+				r.Info("start http server...")
+				wg.Done()
+				if err := httpSrv.Serve(httpListener); err != nil && err != http.ErrServerClosed {
+					r.Fatalf("listen: %v\n", err)
+				}
+			}()
+		}
+
 		go func() {
-			r.Info("start http server...")
-			if err := httpSrv.Serve(httpListener); err != nil && err != http.ErrServerClosed {
+			if err = muxer.Serve(); err != nil {
 				r.Fatalf("listen: %v\n", err)
 			}
 		}()
-
-		if err = muxer.Serve(); err != nil {
-			r.Fatalf("listen: %v\n", err)
-		}
 
 	} else {
 		go func() {
@@ -439,17 +454,15 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal, 1)
-	// kill (no param) default send syscanll.SIGTERM
-	// kill -2 is syscall.SIGINT
-	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
 	<-quit
-	r.Infof("Shutdown Server ...")
 
+	r.Infof("Shutdown Server ...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if r.registry != nil {
+		r.Infof("unregister from registry")
 		_ = r.registry.UnRegister(ip + addr)
 	}
 	if r.grpcServer != nil {
@@ -457,10 +470,11 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 		r.grpcServer.GracefulStop()
 	}
 
-	if err := httpSrv.Shutdown(ctx); err != nil {
-		r.Fatal("stop http server: ", err)
-		return err
+	if enableHttp {
+		r.Infof("stop http server")
+		_ = httpSrv.Shutdown(ctx)
 	}
+
 	return nil
 }
 

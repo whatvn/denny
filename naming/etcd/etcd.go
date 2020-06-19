@@ -38,6 +38,7 @@ func New(etcdAddrs, serviceName string) naming.Registry {
 		cli:         cli,
 		Log:         log.New(),
 		serviceName: serviceName,
+		shutdown:    make(chan interface{}, 1),
 	}
 	registry.WithField("etcd", etcdAddrs)
 	return registry

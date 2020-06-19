@@ -25,6 +25,7 @@ func New(redisAddr, redisPassword, serviceName string) naming.Registry {
 		cli:         client,
 		Log:         log.New(),
 		serviceName: serviceName,
+		shutdown:    make(chan interface{}, 1),
 	}
 	registry.WithField("redis", redisAddr)
 	if len(redisPassword) > 0 {
