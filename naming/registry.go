@@ -15,7 +15,7 @@ const (
 // contains method to register and unregister from naming storage
 type Registry interface {
 	Register(addr string, ttl int) error
-	UnRegister(serviceName, addr string) error
+	UnRegister(addr string) error
 	Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error)
 	Scheme() string
 	SvcName() string

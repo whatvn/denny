@@ -69,8 +69,8 @@ func (r *etcd) register(addr string, ttl int) error {
 
 // UnRegister deletes itself in etcd storage
 // also stop watch goroutine and ticker inside it
-func (r *etcd) UnRegister(name string, addr string) error {
-	_, _ = r.cli.Delete(context.Background(), "/"+naming.Prefix+"/"+name+"/"+addr)
+func (r *etcd) UnRegister(addr string) error {
+	_, _ = r.cli.Delete(context.Background(), "/"+naming.Prefix+"/"+r.serviceName+"/"+addr)
 	r.shutdown <- "stop"
 	return nil
 }

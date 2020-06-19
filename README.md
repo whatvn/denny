@@ -1,6 +1,6 @@
 # denny
 
-common http server which simplify request handling and logging by combining libraries, framework to be able to 
+common http/grpc server which simplify request handling and logging by combining libraries, framework to be able to 
 - support both http and grpc in one controller, write once, support both protocol. See [example](https://github.com/whatvn/denny/blob/master/example/brpc.go)
 - support class base request controller, one controller for one handler, **or** you can describe your service in grpc and impelement grpc service, denny will then support HTTP/gRPC when you start it in brpc mode, see [example](https://github.com/whatvn/denny/blob/master/example/brpc.go)
 - make cache usage simpler

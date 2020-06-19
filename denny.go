@@ -132,6 +132,7 @@ func (g *group) Use(handleFunc HandleFunc) *group {
 	return g
 }
 
+// Controller is the same with router Controller, but register a controller with given path within group
 func (g *group) Controller(path string, method HttpMethod, ctl controller) *group {
 	if g.engine.validator != nil {
 		ctl.SetValidator(g.engine.validator)
@@ -377,6 +378,7 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 		muxer        cmux.CMux
 		err          error
 		addr         = r.resolveAddress(addrs)
+		ip           string
 	)
 
 	r.initRoute()
@@ -389,7 +391,7 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 
 		// register service into registered registry
 		if r.registry != nil {
-			ip, err := localIp()
+			ip, err = localIp()
 			if err != nil {
 				panic(err)
 			}
@@ -446,12 +448,17 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	if r.registry != nil {
+		_ = r.registry.UnRegister(ip + addr)
+	}
 	if r.grpcServer != nil {
+		r.Infof("stop grpc server")
 		r.grpcServer.GracefulStop()
 	}
 
 	if err := httpSrv.Shutdown(ctx); err != nil {
-		r.Fatal("Server Shutdown: ", err)
+		r.Fatal("stop http server: ", err)
 		return err
 	}
 	return nil

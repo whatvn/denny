@@ -57,9 +57,10 @@ func (r *redis) register(addr string, ttl int) error {
 	return setCmd.Err()
 }
 
-func (r *redis) UnRegister(serviceName, addr string) error {
+func (r *redis) UnRegister(addr string) error {
 	var (
 		svcPath = "/" + naming.Prefix + "/" + r.serviceName + "/" + addr
 	)
+	r.shutdown <- "stop"
 	return r.cli.Del(svcPath).Err()
 }
