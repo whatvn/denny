@@ -20,8 +20,11 @@ It also borrow many component from well known libraries (go-config, beego, logru
 
 ### Register discoverable grpc service 
 
+#### using etcd as naming storage 
+
 ```go
 
+//server
 func main() {
 
 	server := denny.NewServer(true)
@@ -40,9 +43,9 @@ func main() {
 ``` 
 
 
-### Connect to grpc server using grpc resolver 
 
 ```go
+// client
 
 package main
 
@@ -52,13 +55,67 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/whatvn/denny/example/protobuf"
 	"github.com/whatvn/denny/naming/etcd"
+	"github.com/whatvn/denny/naming"
 	"google.golang.org/grpc"
 )
 
 func main() {
 
 	registry := etcd.NewResolver("127.0.0.1:7379", "demo.brpc.svc")
-	conn, err := grpc.Dial(registry.SvcName(), etcd.DefaultBalancePolicy(), grpc.WithInsecure())
+	conn, err := grpc.Dial(registry.SvcName(), naming.DefaultBalancePolicy(), grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	client := pb.NewHelloServiceClient(conn)
+	response, err := client.SayHelloAnonymous(context.Background(), &empty.Empty{})
+	fmt.Println(response, err)
+}
+```
+
+
+### using redis as naming storage 
+
+```go
+
+//server
+func main() {
+
+	server := denny.NewServer(true)
+	// setup grpc server
+
+	grpcServer := denny.NewGrpcServer()
+	pb.RegisterHelloServiceServer(grpcServer, new(Hello))
+	server.WithGrpcServer(grpcServer)
+	
+	registry := redis.New("127.0.0.1:6379","",  "demo.brpc.svc")
+	server.WithRegistry(registry)
+
+	// start server in dual mode
+	server.GraceFulStart(":8081")
+}
+``` 
+
+
+
+```go
+// client
+
+package main
+
+import (
+	"context"
+	"fmt"
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/whatvn/denny/example/protobuf"
+	"github.com/whatvn/denny/naming/redis"
+	"github.com/whatvn/denny/naming"
+	"google.golang.org/grpc"
+)
+
+func main() {
+
+	registry := redis.NewResolver("127.0.0.1:7379", "", "demo.brpc.svc")
+	conn, err := grpc.Dial(registry.SvcName(), naming.DefaultBalancePolicy(), grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
