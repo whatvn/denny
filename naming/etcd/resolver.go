@@ -6,12 +6,9 @@ import (
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/whatvn/denny/naming"
 	"go.etcd.io/etcd/clientv3"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/resolver"
 	"strings"
 )
-
-const defaultBalancingPolicy = `{"loadBalancingPolicy":"round_robin"}`
 
 // NewResolver is alias to New(), and also register resolver automatically
 // so client does not have to call register resolver everytime
@@ -21,20 +18,13 @@ func NewResolver(etcdAddrs, serviceName string) naming.Registry {
 	return registry
 }
 
-// DefaultBalancePolicy returns default grpc service config
-// which required by new grpc API so client does not have to supply
-// json config everytime
-func DefaultBalancePolicy() grpc.DialOption {
-	return grpc.WithDefaultServiceConfig(defaultBalancingPolicy)
-}
-
 // Build implements grpc Builder.Build method so grpc client know how to construct resolver Builder
 func (r *etcd) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
 	if r.cli == nil {
 		return nil, errors.New("etcd client was not initialised")
 	}
 	r.cc = cc
-	r.log.WithFields(map[string]interface{}{
+	r.WithFields(map[string]interface{}{
 		"scheme":   target.Scheme,
 		"endpoint": target.Endpoint,
 	})
@@ -70,7 +60,7 @@ func (r *etcd) watch(keyPrefix string) {
 
 	resp, err := r.cli.Get(context.Background(), keyPrefix, clientv3.WithPrefix())
 	if err != nil {
-		r.log.Errorf("error %v", err)
+		r.Errorf("error %v", err)
 	} else {
 		for i := range resp.Kvs {
 			addrList = append(addrList, resolver.Address{Addr: strings.TrimPrefix(string(resp.Kvs[i].Key), keyPrefix)})
@@ -87,35 +77,16 @@ func (r *etcd) watch(keyPrefix string) {
 			addr := strings.TrimPrefix(string(ev.Kv.Key), keyPrefix)
 			switch ev.Type {
 			case mvccpb.PUT:
-				if !exist(addrList, addr) {
+				if !naming.Exist(addrList, addr) {
 					addrList = append(addrList, resolver.Address{Addr: addr})
 					r.cc.UpdateState(resolver.State{Addresses: addrList})
 				}
 			case mvccpb.DELETE:
-				if s, ok := remove(addrList, addr); ok {
+				if s, ok := naming.Remove(addrList, addr); ok {
 					addrList = s
 					r.cc.UpdateState(resolver.State{Addresses: addrList})
 				}
 			}
 		}
 	}
-}
-
-func exist(l []resolver.Address, addr string) bool {
-	for i := range l {
-		if l[i].Addr == addr {
-			return true
-		}
-	}
-	return false
-}
-
-func remove(s []resolver.Address, addr string) ([]resolver.Address, bool) {
-	for i := range s {
-		if s[i].Addr == addr {
-			s[i] = s[len(s)-1]
-			return s[:len(s)-1], true
-		}
-	}
-	return nil, false
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/whatvn/denny"
 	pb "github.com/whatvn/denny/example/protobuf"
 	"github.com/whatvn/denny/middleware/http"
-	"github.com/whatvn/denny/naming/etcd"
+	"github.com/whatvn/denny/naming/redis"
 	"io"
 )
 
@@ -46,7 +46,7 @@ func (s *Hello) SayHelloAnonymous(ctx context.Context, in *empty.Empty) (*pb.Hel
 	span, ctx := opentracing.StartSpanFromContext(ctx, "sayHello")
 	defer span.Finish()
 	response := &pb.HelloResponse{
-		Reply: "ha",
+		Reply: "hoho",
 	}
 
 	logger.WithField("response", response)
@@ -117,9 +117,9 @@ func main() {
 	authorized.BrpcController(&Hello{})
 
 	// naming registry
-	registry := etcd.New("127.0.0.1:7379", "demo.brpc.svc")
+	registry := redis.New("127.0.0.1:6379", "", "demo.brpc.svc")
 	server.WithRegistry(registry)
 
 	// start server in dual mode
-	server.GraceFulStart(":8081")
+	server.GraceFulStart(":8080")
 }
