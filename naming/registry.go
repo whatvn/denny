@@ -1,3 +1,4 @@
+// package naming is interface for both registry register/unregister and grpc builder/resolver
 package naming
 
 import (
@@ -30,6 +31,7 @@ func DefaultBalancePolicy() grpc.DialOption {
 	return grpc.WithDefaultServiceConfig(defaultBalancingPolicy)
 }
 
+// Exist checks if given addr is already exist in grpc resolver address list
 func Exist(l []resolver.Address, addr string) bool {
 	for i := range l {
 		if l[i].Addr == addr {
@@ -39,6 +41,7 @@ func Exist(l []resolver.Address, addr string) bool {
 	return false
 }
 
+// Remove removes an address from grpc resolver address list (because it's no longer available in naming registry)
 func Remove(s []resolver.Address, addr string) ([]resolver.Address, bool) {
 	for i := range s {
 		if s[i].Addr == addr {
