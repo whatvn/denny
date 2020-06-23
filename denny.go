@@ -21,50 +21,53 @@ import (
 	"time"
 )
 
-type Context = gin.Context
+type (
+	Context          = gin.Context
+	HandleFunc       = gin.HandlerFunc
+	methodHandlerMap struct {
+		method  HttpMethod
+		handler HandleFunc
+	}
+	group struct {
+		path        string
+		routerGroup *gin.RouterGroup
+		handlerMap  map[string]*methodHandlerMap
+		engine      *Denny
+	}
 
-var invalidMethodType = errors.New("invalid method signature")
+	Denny struct {
+		sync.Mutex
+		*log.Log
+		handlerMap map[string]*methodHandlerMap
+		groups     []*group
+		*gin.Engine
+		initialised bool
+		validator   binding.StructValidator
+		grpcServer  *grpc.Server
+		// for naming registry/dicovery
+		registry naming.Registry
+	}
+)
 
-type HandleFunc = gin.HandlerFunc
+var (
+	invalidMethodType   = errors.New("invalid method signature")
+	notFoundHandlerFunc = func(ctx *Context) {
+		ctx.JSON(
+			http.StatusOK,
+			gin.H{
+				"path":   ctx.Request.RequestURI,
+				"status": http.StatusNotFound,
+				"method": ctx.Request.Method,
+			},
+		)
+	}
 
-type methodHandlerMap struct {
-	method  HttpMethod
-	handler HandleFunc
-}
-
-var notFoundHandlerFunc = func(ctx *Context) {
-	ctx.JSON(
-		http.StatusOK,
-		gin.H{
-			"path":   ctx.Request.RequestURI,
-			"status": http.StatusNotFound,
-			"method": ctx.Request.Method,
-		},
-	)
-}
-
-type group struct {
-	path        string
-	routerGroup *gin.RouterGroup
-	handlerMap  map[string]*methodHandlerMap
-	engine      *Denny
-}
+	underlyContextType = reflect.TypeOf(new(context.Context)).Elem()
+	underlyErrorType   = reflect.TypeOf(new(error)).Elem()
+)
 
 func newGroup(path string, routerGroup *gin.RouterGroup) *group {
 	return &group{path: path, routerGroup: routerGroup}
-}
-
-type Denny struct {
-	sync.Mutex
-	*log.Log
-	handlerMap map[string]*methodHandlerMap
-	groups     []*group
-	*gin.Engine
-	initialised bool
-	validator   binding.StructValidator
-	grpcServer  *grpc.Server
-	// for naming registry/dicovery
-	registry naming.Registry
 }
 
 // NewServer init denny with default parameter
@@ -163,9 +166,6 @@ func httpMethod(method reflect.Method) HttpMethod {
 func httpRouterPath(controllerName string, method reflect.Method) string {
 	return strings.ToLower(controllerName + "/" + method.Name)
 }
-
-var underlyContextType = reflect.TypeOf(new(context.Context)).Elem()
-var underlyErrorType = reflect.TypeOf(new(error)).Elem()
 
 // BrpcController register a grpc service implements as multiple http enpoints
 // endpoint usually start with service name (class name), and end with method name
@@ -315,7 +315,7 @@ func (r *Denny) initRoute() {
 			setupHandler(m, g.routerGroup, p)
 		}
 	}
-
+	r.RemoveExtraSlash = true
 	r.NoRoute(notFoundHandlerFunc)
 	r.NoMethod(notFoundHandlerFunc)
 	r.initialised = true
