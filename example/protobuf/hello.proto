@@ -15,6 +15,5 @@ message HelloResponse {
 }
 
 service HelloService {
-	rpc SayHelloAnonymous(google.protobuf.Empty) returns (HelloResponse);
 	rpc SayHello(HelloRequest) returns (HelloResponse);
 }

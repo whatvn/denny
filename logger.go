@@ -9,11 +9,11 @@ func GetLogger(ctx context.Context) *log.Log {
 	var (
 		logger interface{}
 	)
-	if logCtx, ok := ctx.(*Context); ok {
-		logger, ok := logCtx.Get(log.LogKey)
+	if ctx, ok := ctx.(*Context); ok {
+		logger, ok := ctx.Get(log.LogKey)
 		if !ok {
 			logger := log.New()
-			logCtx.Set(log.LogKey, logger)
+			ctx.Set(log.LogKey, logger)
 			return logger
 		}
 		return logger.(*log.Log)

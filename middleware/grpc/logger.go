@@ -47,5 +47,6 @@ func LoggerInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySer
 	ctx = context.WithValue(ctx, log.LogKey, logger)
 	resp, err = handler(ctx, req)
 	panicking = false // normal exit, no panic happened, disarms defer
+	logger.WithField("response", resp)
 	return
 }

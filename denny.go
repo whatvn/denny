@@ -292,10 +292,10 @@ func (g *group) registerHandler(
 	handlerFunc := handlerFuncObj(method.Func, controllerReferenceValue)
 	switch httpMethod {
 	case HttpPost:
-		g.engine.POST(path, handlerFunc)
+		g.routerGroup.POST(path, handlerFunc)
 		break
 	case HttpGet:
-		g.engine.GET(path, handlerFunc)
+		g.routerGroup.GET(path, handlerFunc)
 		break
 	default:
 		panic("not implemetation")
@@ -417,7 +417,7 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 		}
 
 		go func() {
-			r.Info("start grpc server...")
+			r.Info("start grpc server ", addr)
 			wg.Done()
 			if err := r.grpcServer.Serve(grpcListener); err != nil {
 				r.Fatalf("listen: %v\n", err)
@@ -426,7 +426,7 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 
 		if enableHttp {
 			go func() {
-				r.Info("start http server...")
+				r.Info("start http server ", addr)
 				wg.Done()
 				if err := httpSrv.Serve(httpListener); err != nil && err != http.ErrServerClosed {
 					r.Fatalf("listen: %v\n", err)
@@ -444,7 +444,7 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 		go func() {
 			// service connections
 			httpSrv.Addr = addr
-			r.Info("start http server...")
+			r.Info("start http server ", addr)
 			if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				r.Fatalf("listen: %v\n", err)
 			}

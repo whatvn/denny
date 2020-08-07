@@ -5,9 +5,10 @@ import (
 	"github.com/uber/jaeger-client-go"
 	zk "github.com/uber/jaeger-client-go/transport/zipkin"
 	"github.com/uber/jaeger-client-go/zipkin"
-	"github.com/whatvn/denny/middleware/ot"
+	"github.com/whatvn/denny/middleware/http"
+	"github.com/whatvn/denny/middleware/http/ot"
 	"io/ioutil"
-	"net/http"
+	http_lib "net/http"
 
 	"github.com/whatvn/denny"
 	"github.com/whatvn/denny/middleware"
@@ -41,8 +42,8 @@ func (y yController) Handle(ctx *denny.Context) {
 	logger.AddLog("do more thing")
 	str += " denny"
 	y.Infof("finished")
-	cli := http.Client{}
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8081/", nil)
+	cli := http_lib.Client{}
+	req, _ := http_lib.NewRequest("GET", "http://127.0.0.1:8081/", nil)
 	var span, ok = ot.GetSpan(ctx)
 	if ok {
 		opentracing.GlobalTracer().Inject(
@@ -88,7 +89,7 @@ func main() {
 	authorized := server.NewGroup("/")
 	// per group middleware! in this case we use the custom created
 	// AuthRequired() middleware just in the "authorized" group.
-	authorized.Use(middleware.Logger())
+	authorized.Use(http.Logger())
 	{
 		authorized.Controller("/login", denny.HttpGet, &xController{})
 		authorized.Controller("/logout", denny.HttpGet, &xController{})
@@ -97,7 +98,7 @@ func main() {
 	}
 	opentracing.SetGlobalTracer(trace)
 
-	server.Use(middleware.Logger()).Use(ot.RequestTracer())
+	server.Use(http.Logger()).Use(ot.RequestTracer())
 	server.Controller("/", denny.HttpGet, &xController{})
 	server.Controller("/denny", denny.HttpGet, &yController{})
 	server.GraceFulStart()

@@ -15,16 +15,16 @@ func Logger() denny.HandleFunc {
 			method   = ctx.Request.Method
 
 			userAgent = ctx.Request.UserAgent()
-			uri       = ctx.Request.RequestURI
+			uri       = ctx.Request.URL
 			errs      string
 			start     = time.Now()
 		)
 
 		logger.WithFields(map[string]interface{}{
-			"ClientIP":      clientIP,
-			"RequestMethod": method,
-			"UserAgent":     userAgent,
-			"Uri":           uri,
+			"client_ip":      clientIP,
+			"request_method": method,
+			"user_agent":     userAgent,
+			"uri":            uri,
 		})
 		ctx.Request = ctx.Request.WithContext(context.WithValue(ctx, log.LogKey, logger))
 		ctx.Set(log.LogKey, logger)
