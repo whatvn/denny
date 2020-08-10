@@ -30,6 +30,7 @@ type (
 	}
 	group struct {
 		path        string
+		cors        bool
 		routerGroup *gin.RouterGroup
 		handlerMap  map[string]*methodHandlerMap
 		engine      *Denny
@@ -175,6 +176,26 @@ func (g *group) BrpcController(controllerGroup interface{}) {
 	g.registerHttpController(controllerGroup)
 }
 
+func (g *group) WithCors() {
+	g.cors = true
+}
+
+func cors() HandleFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
+}
+
 func (g *group) registerHttpController(controllerGroup interface{}) {
 	var (
 		controllerReferenceType              = reflect.TypeOf(controllerGroup)
@@ -290,12 +311,15 @@ func (g *group) registerHandler(
 	controllerReferenceValue reflect.Value,
 	method reflect.Method, path string, httpMethod HttpMethod) {
 	handlerFunc := handlerFuncObj(method.Func, controllerReferenceValue)
+	if g.cors {
+		g.routerGroup.OPTIONS(path, cors())
+	}
 	switch httpMethod {
 	case HttpPost:
-		g.routerGroup.POST(path, handlerFunc)
+		g.routerGroup.POST(path, cors(), handlerFunc)
 		break
 	case HttpGet:
-		g.routerGroup.GET(path, handlerFunc)
+		g.routerGroup.GET(path, cors(), handlerFunc)
 		break
 	default:
 		panic("not implemetation")
