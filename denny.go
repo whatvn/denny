@@ -22,8 +22,8 @@ import (
 )
 
 type (
-	Context          = gin.Context
-	HandleFunc       = gin.HandlerFunc
+	Context = gin.Context
+	HandleFunc = gin.HandlerFunc
 	methodHandlerMap struct {
 		method  HttpMethod
 		handler HandleFunc
@@ -42,9 +42,11 @@ type (
 		handlerMap map[string]*methodHandlerMap
 		groups     []*group
 		*gin.Engine
-		initialised bool
-		validator   binding.StructValidator
-		grpcServer  *grpc.Server
+		initialised     bool
+		validator       binding.StructValidator
+		notFoundHandler HandleFunc
+		noMethodHandler HandleFunc
+		grpcServer      *grpc.Server
 		// for naming registry/dicovery
 		registry naming.Registry
 	}
@@ -77,11 +79,13 @@ func NewServer(debug ...bool) *Denny {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	return &Denny{
-		handlerMap:  make(map[string]*methodHandlerMap),
-		groups:      []*group{},
-		Engine:      gin.New(),
-		Log:         log.New(),
-		initialised: false,
+		handlerMap:      make(map[string]*methodHandlerMap),
+		groups:          []*group{},
+		Engine:          gin.New(),
+		Log:             log.New(),
+		initialised:     false,
+		notFoundHandler: notFoundHandlerFunc,
+		noMethodHandler: notFoundHandlerFunc,
 	}
 }
 
@@ -340,8 +344,8 @@ func (r *Denny) initRoute() {
 		}
 	}
 	r.RemoveExtraSlash = true
-	r.NoRoute(notFoundHandlerFunc)
-	r.NoMethod(notFoundHandlerFunc)
+	r.NoRoute(r.notFoundHandler)
+	r.NoMethod(r.noMethodHandler)
 	r.initialised = true
 }
 
@@ -370,6 +374,12 @@ func (r *Denny) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 // only gin style middleware is supported
 func (r *Denny) WithMiddleware(middleware ...HandleFunc) {
 	r.Use(middleware...)
+}
+
+// WithNotFoundHandler registers middleware to http server to serve not found route
+// only gin style middleware is supported
+func (r *Denny) WithNotFoundHandler(handler HandleFunc) {
+	r.notFoundHandler = handler
 }
 
 // Start http server with given address
