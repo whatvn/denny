@@ -11,7 +11,6 @@ import (
 	http_lib "net/http"
 
 	"github.com/whatvn/denny"
-	"github.com/whatvn/denny/middleware"
 )
 
 type xController struct {
