@@ -346,6 +346,7 @@ func (r *Denny) initRoute() {
 	r.RemoveExtraSlash = true
 	r.NoRoute(r.notFoundHandler)
 	r.NoMethod(r.noMethodHandler)
+	r.WithMiddleware(gin.Recovery())
 	r.initialised = true
 }
 
@@ -418,7 +419,6 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 	r.initRoute()
 	enableHttp := len(r.Handlers) > 0 || len(r.groups) > 0
 
-	r.Info("enable http", enableHttp)
 	if enableBrpc {
 		listener, err = net.Listen("tcp", addr)
 		if err != nil {
