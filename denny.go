@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/signal"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"syscall"
@@ -22,8 +23,8 @@ import (
 )
 
 type (
-	Context = gin.Context
-	HandleFunc = gin.HandlerFunc
+	Context          = gin.Context
+	HandleFunc       = gin.HandlerFunc
 	methodHandlerMap struct {
 		method  HttpMethod
 		handler HandleFunc
@@ -67,6 +68,11 @@ var (
 
 	underlyContextType = reflect.TypeOf(new(context.Context)).Elem()
 	underlyErrorType   = reflect.TypeOf(new(error)).Elem()
+)
+
+const (
+	SelectCapital  = "([a-z])([A-Z])"
+	ReplaceCapital = "$1 $2"
 )
 
 func newGroup(path string, routerGroup *gin.RouterGroup) *group {
@@ -160,6 +166,20 @@ func (g *group) Controller(path string, method HttpMethod, ctl controller) *grou
 	return g
 }
 
+func toKebabCase(input string, rule ...string) string {
+
+	re := regexp.MustCompile(SelectCapital)
+	input = re.ReplaceAllString(input, ReplaceCapital)
+
+	input = strings.Join(strings.Fields(strings.TrimSpace(input)), " ")
+
+	rule = append(rule, ".", " ", "_", " ", "-", " ")
+
+	replacer := strings.NewReplacer(rule...)
+	input = replacer.Replace(input)
+	return strings.ToLower(strings.Join(strings.Fields(input), "-"))
+}
+
 func httpMethod(method reflect.Method) HttpMethod {
 	in := method.Type.In(2)
 	if in == reflect.TypeOf(&empty.Empty{}) {
@@ -169,7 +189,7 @@ func httpMethod(method reflect.Method) HttpMethod {
 }
 
 func httpRouterPath(controllerName string, method reflect.Method) string {
-	return strings.ToLower(controllerName + "/" + method.Name)
+	return toKebabCase(controllerName) + "/" + toKebabCase(method.Name)
 }
 
 // BrpcController register a grpc service implements as multiple http enpoints
