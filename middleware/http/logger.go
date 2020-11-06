@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"github.com/whatvn/denny"
 	"github.com/whatvn/denny/log"
 	"time"
@@ -18,6 +19,7 @@ func Logger() denny.HandleFunc {
 			uri       = ctx.Request.URL
 			errs      string
 			start     = time.Now()
+			isError bool
 		)
 
 		logger.WithFields(map[string]interface{}{
@@ -34,9 +36,12 @@ func Logger() denny.HandleFunc {
 		)
 		logger.WithField("Status", statusCode)
 		if ctx.Errors != nil {
+			isError = true
 			bs, err := ctx.Errors.MarshalJSON()
 			if err == nil {
 				errs = string(bs)
+			} else {
+				errs = ctx.Errors.String()
 			}
 		}
 		if len(errs) > 0 {
@@ -44,6 +49,11 @@ func Logger() denny.HandleFunc {
 		}
 		end := time.Now()
 		logger.WithField("end", end)
-		logger.Infof("latency: %v", end.Sub(start))
+		msg := fmt.Sprintf("latency: %v", end.Sub(start))
+		if isError {
+			logger.Error(msg)
+		} else {
+			logger.Info(msg)
+		}
 	}
 }
