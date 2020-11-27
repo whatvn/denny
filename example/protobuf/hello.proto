@@ -1,5 +1,7 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+
 
 package pb;
 
@@ -7,7 +9,7 @@ package pb;
 // protoc -I=. *.proto --go_out=plugins=grpc:.
 
 message HelloRequest {
-	string greeting = 1;
+	string greeting = 1 [(validate.rules).string.min_len = 1];
 }
 
 message HelloResponse {

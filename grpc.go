@@ -2,7 +2,8 @@ package denny
 
 import (
 	"context"
-	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	grpc_middleware "github.com/whatvn/denny/middleware/grpc"
 	"google.golang.org/grpc"
 )

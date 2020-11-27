@@ -1,32 +1,29 @@
 package main
 
 import (
-	"github.com/whatvn/denny"
+	"fmt"
+
+	pb "github.com/whatvn/denny/example/protobuf"
+	"github.com/whatvn/denny/naming"
+	"github.com/whatvn/discovery/redis"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
-
-func logfunc(ctx context.Context) {
-	logger := denny.GetLogger(ctx)
-
-	logger.AddLog("logfunc")
-}
 
 func main() {
 
-	ctx := context.Background()
-	logger := denny.GetLogger(ctx)
-	logger.AddLog("mainfunc")
-	logfunc(ctx)
+	registry := redis.NewResolver("127.0.0.1:6379", "", "demo.brpc.svc")
+	conn, err := grpc.Dial(registry.SvcName(), naming.DefaultBalancePolicy(), grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	client := pb.NewHelloServiceClient(conn)
 
-	logger.Infof("finish")
+	response, err := client.SayHello(context.Background(), &pb.HelloRequest{Greeting: ""})
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	//registry := redis.NewResolver("127.0.0.1:6379", "", "demo.brpc.svc")
-	//conn, err := grpc.Dial(registry.SvcName(), naming.DefaultBalancePolicy(), grpc.WithInsecure())
-	//if err != nil {
-	//	panic(err)
-	//}
-	//client := pb.NewHelloServiceClient(conn)
-	//response, err := client.SayHelloAnonymous(context.Background(), &empty.Empty{})
-	//fmt.Println(response, err)
+	fmt.Println(response, err)
 
 }

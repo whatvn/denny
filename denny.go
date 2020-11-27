@@ -3,13 +3,6 @@ package denny
 import (
 	"context"
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/soheilhy/cmux"
-	"github.com/whatvn/denny/log"
-	"github.com/whatvn/denny/naming"
-	"google.golang.org/grpc"
 	"net"
 	"net/http"
 	"os"
@@ -20,6 +13,15 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/soheilhy/cmux"
+	"github.com/whatvn/denny/log"
+	"github.com/whatvn/denny/middleware"
+	"github.com/whatvn/denny/naming"
+	"google.golang.org/grpc"
 )
 
 type (
@@ -302,6 +304,14 @@ func getCaller(fn, obj reflect.Value) (func(*gin.Context), error) {
 
 		if reqIsValue {
 			req = req.Elem()
+		}
+
+		// check if request has validate function enabled
+		if v, ok := req.Interface().(middleware.IValidator); ok {
+			if err := v.Validate(); err != nil {
+				c.JSON(http.StatusBadRequest, err)
+				return
+			}
 		}
 
 		var vals []reflect.Value

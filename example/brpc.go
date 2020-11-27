@@ -3,15 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/zipkin"
 	"github.com/whatvn/denny"
 	pb "github.com/whatvn/denny/example/protobuf"
+	"github.com/whatvn/denny/middleware/grpc"
 	"github.com/whatvn/denny/middleware/http"
+
 	"github.com/whatvn/denny/naming/redis"
-	"io"
 )
 
 // grpc
@@ -105,7 +108,7 @@ func main() {
 
 	// setup grpc server
 
-	grpcServer := denny.NewGrpcServer()
+	grpcServer := denny.NewGrpcServer(grpc.ValidatorInterceptor)
 	pb.RegisterHelloServiceServer(grpcServer, new(Hello))
 	server.WithGrpcServer(grpcServer)
 	//
