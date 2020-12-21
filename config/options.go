@@ -10,7 +10,11 @@ func WithEtcdAddress(addr ...string) source.Option {
 }
 
 func WithEtcdAuth(user, pass string) source.Option {
-	return etcd.Auth(user, pass)
+	return etcd.BasicAuth(user, pass)
+}
+
+func WithEtcdTLSAuth(certFile, keyFile, caFile string) source.Option {
+	return etcd.TLSAuth(caFile, certFile, keyFile)
 }
 
 func WithPath(path string) source.Option {
