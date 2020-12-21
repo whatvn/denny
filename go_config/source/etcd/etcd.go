@@ -9,6 +9,7 @@ import (
 
 	"github.com/whatvn/denny/go_config/source"
 	cetcd "go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/pkg/transport"
 )
 
 // Currently a single etcd reader
@@ -96,10 +97,27 @@ func NewSource(opts ...source.Option) source.Source {
 		DialTimeout: dialTimeout,
 	}
 
-	u, ok := options.Context.Value(authKey{}).(*authCreds)
+	u, ok := options.Context.Value(basicAuthKey{}).(*basicAuthCreds)
 	if ok {
 		config.Username = u.Username
 		config.Password = u.Password
+	}
+
+	tls, ok := options.Context.Value(tlsAuthKey{}).(*tlsAuthCreds)
+	if ok {
+		var (
+			cfgTLS *transport.TLSInfo
+			err    error
+		)
+		cfgTLS = &transport.TLSInfo{
+			CertFile: tls.CertFile,
+			KeyFile:  tls.KeyFile,
+			CAFile:   tls.CAFile,
+		}
+		config.TLS, err = cfgTLS.ClientConfig()
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	// use default config

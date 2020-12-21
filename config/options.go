@@ -9,7 +9,7 @@ func WithEtcdAddress(addr ...string) source.Option {
 	return etcd.WithAddress(addr...)
 }
 
-func WithEtdAuth(user, pass string) source.Option {
+func WithEtcdAuth(user, pass string) source.Option {
 	return etcd.Auth(user, pass)
 }
 

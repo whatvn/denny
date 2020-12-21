@@ -9,12 +9,19 @@ import (
 
 type addressKey struct{}
 type pathKey struct{}
-type authKey struct{}
+type basicAuthKey struct{}
+type tlsAuthKey struct{}
 type dialTimeoutKey struct{}
 
-type authCreds struct {
+type basicAuthCreds struct {
 	Username string
 	Password string
+}
+
+type tlsAuthCreds struct {
+	CAFile   string
+	CertFile string
+	KeyFile  string
 }
 
 // WithAddress sets the etcd address
@@ -37,13 +44,23 @@ func WithPath(p string) source.Option {
 	}
 }
 
-// Auth allows you to specify username/password
-func Auth(username, password string) source.Option {
+// BasicAuth allows you to specify username/password
+func BasicAuth(username, password string) source.Option {
 	return func(o *source.Options) {
 		if o.Context == nil {
 			o.Context = context.Background()
 		}
-		o.Context = context.WithValue(o.Context, authKey{}, &authCreds{Username: username, Password: password})
+		o.Context = context.WithValue(o.Context, basicAuthKey{}, &basicAuthCreds{Username: username, Password: password})
+	}
+}
+
+// TLSAuth allows you to specify cafile, certfile, keyfile
+func TLSAuth(caFile, certFile, keyFile string) source.Option {
+	return func(o *source.Options) {
+		if o.Context == nil {
+			o.Context = context.Background()
+		}
+		o.Context = context.WithValue(o.Context, basicAuthKey{}, &tlsAuthCreds{CAFile: caFile, CertFile: certFile, KeyFile: keyFile})
 	}
 }
 
