@@ -60,7 +60,7 @@ func TLSAuth(caFile, certFile, keyFile string) source.Option {
 		if o.Context == nil {
 			o.Context = context.Background()
 		}
-		o.Context = context.WithValue(o.Context, basicAuthKey{}, &tlsAuthCreds{CAFile: caFile, CertFile: certFile, KeyFile: keyFile})
+		o.Context = context.WithValue(o.Context, tlsAuthKey{}, &tlsAuthCreds{CAFile: caFile, CertFile: certFile, KeyFile: keyFile})
 	}
 }
 
