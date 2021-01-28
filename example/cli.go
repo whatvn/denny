@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/whatvn/denny/naming/redis"
 
 	pb "github.com/whatvn/denny/example/protobuf"
 	"github.com/whatvn/denny/naming"
-	"github.com/whatvn/discovery/redis"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
