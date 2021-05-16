@@ -35,18 +35,18 @@ It also borrows many component from well known libraries (go-config, beego, logr
 //server
 func main() {
 
-server := denny.NewServer(true)
-// setup grpc server
+	server := denny.NewServer(true)
+	// setup grpc server
 
-grpcServer := denny.NewGrpcServer()
-pb.RegisterHelloServiceServer(grpcServer, new(Hello))
-server.WithGrpcServer(grpcServer)
+	grpcServer := denny.NewGrpcServer()
+	pb.RegisterHelloServiceServer(grpcServer, new(Hello))
+	server.WithGrpcServer(grpcServer)
+	
+	registry := etcd.New("127.0.0.1:7379", "demo.brpc.svc")
+	server.WithRegistry(registry)
 
-registry := etcd.New("127.0.0.1:7379", "demo.brpc.svc")
-server.WithRegistry(registry)
-
-// start server in dual mode
-server.GraceFulStart(":8081")
+	// start server in dual mode
+	server.GraceFulStart(":8081")
 }
 ``` 
 
@@ -85,18 +85,18 @@ func main() {
 //server
 func main() {
 
-server := denny.NewServer(true)
-// setup grpc server
+	server := denny.NewServer(true)
+	// setup grpc server
 
-grpcServer := denny.NewGrpcServer()
-pb.RegisterHelloServiceServer(grpcServer, new(Hello))
-server.WithGrpcServer(grpcServer)
+	grpcServer := denny.NewGrpcServer()
+	pb.RegisterHelloServiceServer(grpcServer, new(Hello))
+	server.WithGrpcServer(grpcServer)
+	
+	registry := redis.New("127.0.0.1:6379","",  "demo.brpc.svc")
+	server.WithRegistry(registry)
 
-registry := redis.New("127.0.0.1:6379", "", "demo.brpc.svc")
-server.WithRegistry(registry)
-
-// start server in dual mode
-server.GraceFulStart(":8081")
+	// start server in dual mode
+	server.GraceFulStart(":8081")
 }
 ``` 
 
@@ -350,7 +350,7 @@ curl http://localhost:8080/hello/say-hello-anonymous
 # With ProtoJsonResponseSerializer
 curl http://localhost:8080/hello/say-hello-anonymous
 
-{"createdAt":"2021-05-16T16:05:59.312303Z","reply":"hoho","status":"STATUS_FAIL"}
+{"reply":"hoho","status":"STATUS_FAIL","createdAt":"2021-05-16T16:05:59.312303Z"}
 ```
 
 ### setting up simple http request handler
