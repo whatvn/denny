@@ -20,7 +20,7 @@ import (
 // grpc
 type Hello struct{}
 
-// groupPath + "/hello/" + "sayhello"
+// groupPath + "/hello/" + "say-hello"
 //
 func (s *Hello) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloResponse, error) {
 	var (
@@ -37,10 +37,10 @@ func (s *Hello) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRes
 // http get request
 // when define grpc method with input is empty.Empty object, denny will consider request as get request
 // router will be:
-// groupPath + "/hello/" + "sayhelloanonymous"
-// rule is rootRoute + "/" lowerCase(serviceName) + "/" lowercase(methodName)
+// groupPath + "/hello/" + "say-hello-anonymous"
+// rule is rootRoute + "/" kebabCase(serviceName) + "/" kebabCase(methodName)
 
-func (s *Hello) SayHelloAnonymous(ctx context.Context, in *empty.Empty) (*pb.HelloResponse, error) {
+func (s *Hello) SayHelloAnonymous(ctx context.Context, in *empty.Empty) (*pb.HelloResponseAnonymous, error) {
 
 	var (
 		logger = denny.GetLogger(ctx)
@@ -48,8 +48,9 @@ func (s *Hello) SayHelloAnonymous(ctx context.Context, in *empty.Empty) (*pb.Hel
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "sayHello")
 	defer span.Finish()
-	response := &pb.HelloResponse{
-		Reply: "hoho",
+	response := &pb.HelloResponseAnonymous{
+		Reply:  "hoho",
+		Status: pb.Status_STATUS_SUCCESS,
 	}
 
 	logger.WithField("response", response)
