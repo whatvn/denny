@@ -114,8 +114,9 @@ func (r *Denny) WithGrpcServer(server *grpc.Server) *Denny {
 	return r
 }
 
-//TerminateSignalHandle if you deploy on kubernetes, kubernetes will send a signal before stop a pod
+//TerminateSignalHandle if you deploy on kubernetes, kubernetes will send a signal term before stop a pod
 //We can leverage the signal to backup data or close connections, et cetera.
+//Only work if using GraceFulStart
 func (r *Denny) TerminateSignalHandle(backupFunc BackupFunc) {
 	r.backupFunc = backupFunc
 }
