@@ -9,11 +9,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	pb "github.com/whatvn/denny/example/protobuf"
 	"github.com/whatvn/denny/middleware/grpc"
+	"github.com/whatvn/denny/naming"
+	"github.com/whatvn/denny/naming/etcd"
+	"go.etcd.io/etcd/clientv3"
+	grpcClient "google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -168,4 +173,48 @@ func TestCustomJsonMarshal(t *testing.T) {
 	}
 	assert.Equal(t, mockTime.Equal(createdAt), true)
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestNaming(t *testing.T) {
+	server := NewServer(true)
+
+	// setup grpc server
+	grpcServer := NewGrpcServer(grpc.ValidatorInterceptor)
+	pb.RegisterHelloServiceServer(grpcServer, new(Hello))
+	server.WithGrpcServer(grpcServer)
+	//
+
+	//// then http
+	authorized := server.NewGroup("/")
+	authorized.BrpcController(&Hello{})
+
+	// RUN
+	clientCfgServer := clientv3.Config{
+		Endpoints:   strings.Split("58.84.1.31:2379", ";"),
+		Username:    "root",
+		Password:    "phuc12345",
+		DialTimeout: 15 * time.Second,
+	}
+	registryServer := etcd.NewWithClientConfig("bevo.profile", clientCfgServer)
+	server.WithRegistry(registryServer)
+
+	// start server in dual mode
+	go server.GraceFulStart(":8081")
+
+	// Run client
+	clientCfg := clientv3.Config{
+		Endpoints:   strings.Split("58.84.1.31:2379", ";"),
+		Username:    "root",
+		Password:    "phuc12345",
+		DialTimeout: 15 * time.Second,
+	}
+	registry := etcd.NewResolverWithClientConfig("bevo.profile", clientCfg)
+	conn, err := grpcClient.Dial(registry.SvcName(), naming.DefaultBalancePolicy(), grpcClient.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	client := pb.NewHelloServiceClient(conn)
+	response, err := client.SayHelloAnonymous(context.Background(), &empty.Empty{})
+	fmt.Println(response, err)
+	assert.Equal(t, "hoho", response.Reply)
 }

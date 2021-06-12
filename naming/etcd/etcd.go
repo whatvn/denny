@@ -18,7 +18,7 @@ type etcd struct {
 	serviceName string
 }
 
-// etcd
+// New etcd
 // implement github.com/whatvn/denny/naming#Registry
 // with 2 methods: Register and UnRegister
 func New(etcdAddrs, serviceName string) naming.Registry {
@@ -41,6 +41,29 @@ func New(etcdAddrs, serviceName string) naming.Registry {
 		shutdown:    make(chan interface{}, 1),
 	}
 	registry.WithField("etcd", etcdAddrs)
+	return registry
+}
+
+// NewWithClientConfig etcd
+// implement github.com/whatvn/denny/naming#Registry
+// with 2 methods: Register and UnRegister
+func NewWithClientConfig(serviceName string, etcdClientCfg clientv3.Config) naming.Registry {
+
+	cli, err := clientv3.New(etcdClientCfg)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(serviceName) == 0 {
+		panic(errors.New("invalid service name"))
+	}
+	registry := &etcd{
+		cli:         cli,
+		Log:         log.New(),
+		serviceName: serviceName,
+		shutdown:    make(chan interface{}, 1),
+	}
+	registry.WithField("etcd", etcdClientCfg.Endpoints)
 	return registry
 }
 
