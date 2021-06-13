@@ -27,7 +27,7 @@ func New(sources ...string) error {
 	var cfgSources []source.Source
 	for _, s := range sources {
 		if !fileExists(s) {
-			fmt.Printf("[Warning] file %s not exist\n")
+			return fmt.Errorf("[Warning] file %s not exist\n", s)
 		} else {
 			cfgSources = append(cfgSources, file.NewSource(file.WithPath(s)))
 		}
