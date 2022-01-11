@@ -18,6 +18,14 @@ func NewResolver(etcdAddrs, serviceName string) naming.Registry {
 	return registry
 }
 
+// NewResolverWithClientConfig is alias to NewWithClientConfig(), and also register resolver automatically
+// so client does not have to call register resolver everytime
+func NewResolverWithClientConfig(serviceName string, etcdClientCfg clientv3.Config) naming.Registry {
+	registry := NewWithClientConfig(serviceName, etcdClientCfg)
+	resolver.Register(registry)
+	return registry
+}
+
 // Build implements grpc Builder.Build method so grpc client know how to construct resolver Builder
 func (r *etcd) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
 	if r.cli == nil {

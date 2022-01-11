@@ -1,12 +1,18 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
 import "validate/validate.proto";
+import "google/protobuf/timestamp.proto";
 
-
+option go_package = "example/protobuf";
 package pb;
 
 //option go_package = "example.com/foo/bar";
 // protoc -I=. *.proto --go_out=plugins=grpc:.
+
+enum Status {
+	STATUS_SUCCESS= 0;
+	STATUS_FAIL = 1;
+}
 
 message HelloRequest {
 	string greeting = 1 [(validate.rules).string.min_len = 1];
@@ -14,8 +20,16 @@ message HelloRequest {
 
 message HelloResponse {
 	string reply = 1;
+	google.protobuf.Timestamp created_at = 2;
+}
+
+message HelloResponseAnonymous {
+	string reply = 1;
+	Status status = 2;
+	google.protobuf.Timestamp created_at = 3;
 }
 
 service HelloService {
 	rpc SayHello(HelloRequest) returns (HelloResponse);
+	rpc SayHelloAnonymous(google.protobuf.Empty) returns (HelloResponseAnonymous);
 }

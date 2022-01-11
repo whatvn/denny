@@ -5,10 +5,10 @@ import (
 	"github.com/uber/jaeger-client-go"
 	zk "github.com/uber/jaeger-client-go/transport/zipkin"
 	"github.com/uber/jaeger-client-go/zipkin"
+	"github.com/whatvn/denny/middleware/http"
 	"github.com/whatvn/denny/middleware/http/ot"
 
 	"github.com/whatvn/denny"
-	"github.com/whatvn/denny/middleware"
 )
 
 type zController struct {
@@ -50,7 +50,7 @@ func main() {
 	defer closer.Close()
 	opentracing.SetGlobalTracer(trace)
 
-	server.Use(middleware.Logger()).Use(ot.RequestTracer())
+	server.Use(http.Logger()).Use(ot.RequestTracer())
 	server.Controller("/", denny.HttpGet, &zController{})
 	server.GraceFulStart(":8081")
 }

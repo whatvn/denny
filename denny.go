@@ -2,7 +2,10 @@ package denny
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"net"
 	"net/http"
 	"os"
@@ -53,6 +56,8 @@ type (
 		// for naming registry/dicovery
 		registry naming.Registry
 	}
+
+	ProtoJsonSerializer func(response interface{}) (interface{}, error)
 )
 
 var (
@@ -70,6 +75,25 @@ var (
 
 	underlyContextType = reflect.TypeOf(new(context.Context)).Elem()
 	underlyErrorType   = reflect.TypeOf(new(error)).Elem()
+
+	brpcHTTPResponseParser ProtoJsonSerializer
+
+	ProtoJsonResponseSerializer = func(m protojson.MarshalOptions) ProtoJsonSerializer {
+		return func(response interface{}) (interface{}, error) {
+			responseProto, ok := response.(proto.Message)
+			if !ok {
+				return response, nil
+			}
+
+			jsonBytes, err := m.Marshal(responseProto)
+			if err != nil {
+				return nil, err
+			}
+			var newResponse interface{}
+			err = json.Unmarshal(jsonBytes, &newResponse)
+			return newResponse, err
+		}
+	}
 )
 
 const (
@@ -95,6 +119,10 @@ func NewServer(debug ...bool) *Denny {
 		notFoundHandler: notFoundHandlerFunc,
 		noMethodHandler: notFoundHandlerFunc,
 	}
+}
+
+func AddProtoJsonResponseSerializer(parserFunc ProtoJsonSerializer) {
+	brpcHTTPResponseParser = parserFunc
 }
 
 // WithRegistry makes Denny discoverable via naming registry
@@ -325,6 +353,17 @@ func getCaller(fn, obj reflect.Value) (func(*gin.Context), error) {
 				c.AbortWithError(http.StatusInternalServerError, err.(error))
 				return
 			}
+
+			if brpcHTTPResponseParser != nil {
+				res, err := brpcHTTPResponseParser(response)
+				if err != nil {
+					c.AbortWithError(http.StatusInternalServerError, err)
+					return
+				}
+				c.JSON(http.StatusOK, res)
+				return
+			}
+
 			c.JSON(http.StatusOK, response)
 			return
 		}
