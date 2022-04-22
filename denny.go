@@ -337,7 +337,7 @@ func getCaller(fn, obj reflect.Value) (func(*gin.Context), error) {
 		// check if request has validate function enabled
 		if v, ok := req.Interface().(middleware.IValidator); ok {
 			if err := v.Validate(); err != nil {
-				c.JSON(http.StatusBadRequest, err)
+				_ = c.AbortWithError(http.StatusBadRequest, err)
 				return
 			}
 		}
@@ -350,14 +350,14 @@ func getCaller(fn, obj reflect.Value) (func(*gin.Context), error) {
 		if vals != nil {
 			response, err := vals[0].Interface(), vals[1].Interface()
 			if err != nil {
-				c.AbortWithError(http.StatusInternalServerError, err.(error))
+				_ = c.AbortWithError(http.StatusInternalServerError, err.(error))
 				return
 			}
 
 			if brpcHTTPResponseParser != nil {
 				res, err := brpcHTTPResponseParser(response)
 				if err != nil {
-					c.AbortWithError(http.StatusInternalServerError, err)
+					_ = c.AbortWithError(http.StatusInternalServerError, err)
 					return
 				}
 				c.JSON(http.StatusOK, res)
