@@ -28,6 +28,7 @@ import (
 )
 
 type (
+	BackupFunc       func()
 	Context          = gin.Context
 	HandleFunc       = gin.HandlerFunc
 	methodHandlerMap struct {
@@ -54,7 +55,8 @@ type (
 		noMethodHandler HandleFunc
 		grpcServer      *grpc.Server
 		// for naming registry/dicovery
-		registry naming.Registry
+		registry   naming.Registry
+		backupFunc BackupFunc
 	}
 
 	ProtoJsonSerializer func(response interface{}) (interface{}, error)
@@ -138,6 +140,13 @@ func (r *Denny) WithGrpcServer(server *grpc.Server) *Denny {
 	}
 	r.grpcServer = server
 	return r
+}
+
+//TerminateSignalHandle if you deploy on kubernetes, kubernetes will send a signal term before stop a pod
+//We can leverage the signal to backup data or close connections, et cetera.
+//Only work if using GraceFulStart
+func (r *Denny) TerminateSignalHandle(backupFunc BackupFunc) {
+	r.backupFunc = backupFunc
 }
 
 // Controller register a controller with given path, method to http routes
@@ -557,8 +566,12 @@ func (r *Denny) GraceFulStart(addrs ...string) error {
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
-	quit := make(chan os.Signal, 1)
+	quit := make(chan os.Signal, 2)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
+	if r.backupFunc != nil {
+		<-quit
+		r.backupFunc()
+	}
 	<-quit
 
 	r.Infof("Shutdown Server ...")
